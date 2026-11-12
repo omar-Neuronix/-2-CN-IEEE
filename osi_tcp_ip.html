@@ -1,0 +1,2854 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة نماذج الشبكات التفاعلية | OSI & TCP/IP Models - IEEE KSB Week 2</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Cairo & Tajawal & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                        tajawal: ['Tajawal', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        darkBg: '#0b0f19',
+                        darkCard: '#111827',
+                        brandCyan: '#06b6d4',
+                        brandIndigo: '#6366f1',
+                        brandEmerald: '#10b981',
+                        brandAmber: '#f59e0b',
+                        brandRose: '#f43f5e'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            color-scheme: dark;
+        }
+        body {
+            background: radial-gradient(circle at 15% 15%, rgba(6, 182, 212, 0.10), transparent 35%),
+                        radial-gradient(circle at 85% 80%, rgba(99, 102, 241, 0.12), transparent 40%),
+                        #0b0f19;
+            color: #f1f5f9;
+            font-family: 'Cairo', 'Tajawal', sans-serif;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.72);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.55);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover {
+            border-color: rgba(6, 182, 212, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px -8px rgba(6, 182, 212, 0.18);
+        }
+
+        /* LTR Technical Badges */
+        .ltr-badge {
+            direction: ltr;
+            unicode-bidi: embed;
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* 3D Flip Card for Flashcards */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #06b6d4;
+        }
+
+        /* Packet Animation Keyframes */
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 12px rgba(6, 182, 212, 0.5); }
+            50% { box-shadow: 0 0 24px rgba(99, 102, 241, 0.85); }
+        }
+        .active-glow {
+            animation: pulseGlow 2.2s infinite;
+        }
+        mark.search-highlight {
+            background-color: rgba(245, 158, 11, 0.35);
+            color: #fde68a;
+            padding: 0 4px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-cyan-500 selection:text-slate-950">
+
+    <!-- ==================== TOP HEADER ==================== -->
+    <header class="sticky top-0 z-40 glass-panel border-b border-slate-800/80 px-4 lg:px-8 py-3">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+            <!-- Brand & Source Metadata (Slide 1) -->
+            <div class="flex items-center gap-3">
+                <button id="mobileMenuBtn" onclick="toggleMobileSidebar()" class="lg:hidden p-2.5 rounded-xl bg-slate-800/80 text-cyan-400 hover:bg-slate-700 transition" aria-label="القائمة">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                    <i class="fa-solid fa-network-wired text-white text-xl"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 ltr-badge">IEEE KSB – Networking Track | Week 2</span>
+                        <span class="text-[11px] px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 border border-slate-700 ltr-badge">Slide 1 / 13</span>
+                    </div>
+                    <h1 class="text-lg md:text-xl font-extrabold text-white tracking-tight mt-0.5">
+                        نماذج الشبكات: <span class="text-transparent bg-clip-text bg-gradient-to-l from-cyan-400 to-indigo-400 ltr-badge">OSI &amp; TCP/IP Models</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">
+                        المحاضرون (Instructors): <span class="text-slate-200 font-semibold ltr-badge">Ahmed Mohamed / Kareem Osama</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Search Bar & Overall Progress & Reset -->
+            <div class="flex items-center gap-3 flex-1 max-w-xl justify-end">
+                <!-- Global Search -->
+                <div class="relative flex-1 max-w-xs">
+                    <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input id="globalSearchInput" type="text" placeholder="ابحث في الطبقات، البروتوكولات، الأجهزة..." 
+                           oninput="handleGlobalSearch(this.value)"
+                           class="w-full bg-slate-900/90 border border-slate-700/80 focus:border-cyan-400 rounded-xl pr-10 pl-8 py-2 text-xs md:text-sm text-slate-100 placeholder-slate-400 outline-none transition">
+                    <button id="clearSearchBtn" onclick="clearGlobalSearch()" class="hidden absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- Progress Pill -->
+                <div class="hidden sm:flex flex-col min-w-[135px] bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-xl">
+                    <div class="flex items-center justify-between text-xs mb-1">
+                        <span class="text-slate-400">الإنجاز الكلي</span>
+                        <span id="overallProgressText" class="font-bold text-cyan-400 ltr-badge">0%</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                        <div id="overallProgressBar" class="h-full bg-gradient-to-l from-cyan-400 to-indigo-500 transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Bookmarks Counter Button -->
+                <button onclick="switchSection('summary'); scrollToElement('bookmarksContainer')" title="النقاط المحفوظة في المفضلة" class="relative p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-amber-400 border border-slate-700/70 transition">
+                    <i class="fa-solid fa-bookmark"></i>
+                    <span id="bookmarkCountBadge" class="absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-amber-500 text-slate-950 text-[11px] font-extrabold flex items-center justify-center">0</span>
+                </button>
+
+                <!-- Reset Progress Button -->
+                <button onclick="openResetModal()" title="إعادة ضبط التقدم" class="p-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/25 transition">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Global Search Results Dropdown -->
+        <div id="searchResultsDrawer" class="hidden max-w-7xl mx-auto mt-3 p-4 rounded-2xl bg-slate-900/95 border border-cyan-500/40 shadow-2xl max-h-80 overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-3">
+                <span id="searchResultsCount" class="text-xs font-bold text-cyan-400">نتائج البحث</span>
+                <button onclick="clearGlobalSearch()" class="text-xs text-slate-400 hover:text-white">إغلاق <i class="fa-solid fa-xmark mr-1"></i></button>
+            </div>
+            <div id="searchResultsList" class="grid grid-cols-1 md:grid-cols-2 gap-2.5"></div>
+        </div>
+    </header>
+
+    <!-- ==================== MAIN WORKSPACE ==================== -->
+    <div class="max-w-7xl w-full mx-auto flex-1 flex flex-col lg:flex-row gap-6 px-4 lg:px-8 py-6">
+
+        <!-- SIDEBAR NAVIGATION -->
+        <aside id="sidebarNav" class="fixed lg:static inset-y-0 right-0 z-50 w-72 lg:w-72 shrink-0 transform translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out glass-panel lg:rounded-2xl p-4 flex flex-col justify-between overflow-y-auto border-l lg:border border-slate-800">
+            <div>
+                <div class="flex items-center justify-between lg:hidden pb-3 mb-3 border-b border-slate-800">
+                    <span class="font-bold text-cyan-400">قائمة الوحدات التعليمية</span>
+                    <button onclick="toggleMobileSidebar()" class="text-slate-400 hover:text-white p-1">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <div class="mb-3 px-2 flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">وحدات المنصة (8 وحدات)</span>
+                    <span id="completedUnitsBadge" class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 ltr-badge">0 / 8</span>
+                </div>
+
+                <nav id="navButtonsContainer" class="space-y-1.5">
+                    <!-- Populated dynamically via JS -->
+                </nav>
+            </div>
+
+            <!-- Coverage Guarantee Card in Sidebar -->
+            <div class="mt-6 p-3.5 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800/90 border border-cyan-500/25 text-xs space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="font-bold text-cyan-300"><i class="fa-solid fa-shield-check ml-1"></i> تغطية المصدر</span>
+                    <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold ltr-badge">100% (13/13)</span>
+                </div>
+                <p class="text-slate-400 leading-relaxed text-[11px]">
+                    تم تضمين جميع الشرائح (Slides 1–13) والجداول والملاحظات حرفياً مع تمييز الشروحات الإضافية بوضوح.
+                </p>
+                <button onclick="markCurrentUnitComplete()" id="sidebarCompleteBtn" class="w-full py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <span>تحديد الوحدة كمكتملة</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Mobile Backdrop -->
+        <div id="sidebarBackdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-black/60 z-40 hidden lg:hidden"></div>
+
+        <!-- MAIN CONTENT SECTIONS -->
+        <main class="flex-1 min-w-0 space-y-6">
+
+            <!-- =====================================================================
+                 SECTION 1: DASHBOARD & OBJECTIVES & COVERAGE MAP (Slides 1, 2, 3, 12, 13)
+                 ===================================================================== -->
+            <section id="sec-dashboard" class="unit-section space-y-6">
+                <!-- Hero Banner (Slide 1) -->
+                <div class="glass-panel rounded-2xl p-6 md:p-8 relative overflow-hidden border border-cyan-500/30">
+                    <div class="absolute -left-16 -top-16 w-56 h-56 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none"></div>
+                    <div class="absolute -right-16 -bottom-16 w-56 h-56 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 ltr-badge">Slide 1</span>
+                            <span class="px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 ltr-badge">IEEE KSB – Networking Track | Week 2</span>
+                        </div>
+                        <button onclick="toggleBookmark('slide1-title', 'OSI & TCP/IP Models - IEEE KSB Week 2 (Ahmed Mohamed / Kareem Osama)')" class="text-slate-400 hover:text-amber-400 transition text-sm flex items-center gap-1">
+                            <i class="fa-regular fa-bookmark"></i> <span>حفظ في المفضلة</span>
+                        </button>
+                    </div>
+
+                    <h2 class="text-2xl md:text-4xl font-black text-white mb-2 leading-tight">
+                        نماذج الاتصال الشبكي: <span class="text-cyan-400 ltr-badge">OSI &amp; TCP/IP Models</span>
+                    </h2>
+                    <p class="text-slate-300 text-sm md:text-base max-w-3xl leading-relaxed mb-6">
+                        مرحباً بك في المنصة التفاعلية الشاملة للأسبوع الثاني من مسار الشبكات (<span class="ltr-badge text-cyan-300">IEEE KSB – Networking Track | Week 2</span>) بإشراف المحاضرَين <strong class="text-white ltr-badge">Ahmed Mohamed / Kareem Osama</strong>. تحول هذه المنصة جميع شرائح العرض التقديمي الـ 13 إلى مختبرات حية ومقارنات تفاعلية دون حذف أي تفصيل.
+                    </p>
+
+                    <!-- Quick Stats Row -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div class="glass-card rounded-xl p-3.5 text-center">
+                            <div class="text-2xl font-black text-cyan-400 ltr-badge">7 Layers</div>
+                            <div class="text-xs text-slate-300 mt-1">طبقات نموذج <span class="ltr-badge">OSI</span> القياسي</div>
+                        </div>
+                        <div class="glass-card rounded-xl p-3.5 text-center">
+                            <div class="text-2xl font-black text-indigo-400 ltr-badge">4 Layers</div>
+                            <div class="text-xs text-slate-300 mt-1">طبقات نموذج <span class="ltr-badge">TCP/IP</span> العملي</div>
+                        </div>
+                        <div class="glass-card rounded-xl p-3.5 text-center">
+                            <div class="text-2xl font-black text-emerald-400 ltr-badge">TCP vs UDP</div>
+                            <div class="text-xs text-slate-300 mt-1">بروتوكولات طبقة النقل</div>
+                        </div>
+                        <div class="glass-card rounded-xl p-3.5 text-center">
+                            <div class="text-2xl font-black text-amber-400 ltr-badge">13 / 13</div>
+                            <div class="text-xs text-slate-300 mt-1">شرائح مغطاة بنسبة 100%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Session Objectives (Slide 2) -->
+                <div class="glass-panel rounded-2xl p-6">
+                    <div class="flex items-center justify-between flex-wrap gap-2 mb-5">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
+                                <i class="fa-solid fa-bullseye"></i>
+                            </span>
+                            <div>
+                                <h3 class="text-lg font-bold text-white">أهداف الجلسة التدريبية (<span class="ltr-badge">Session Objectives</span>)</h3>
+                                <p class="text-xs text-slate-400">مستخرجة بالكامل من الشريحة الثانية في الملف الأصلي</p>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-md text-xs font-mono bg-slate-800 text-cyan-300 border border-slate-700 ltr-badge">Slide 2</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Objective 1 -->
+                        <div onclick="switchSection('osi')" class="glass-card rounded-xl p-4 cursor-pointer group flex items-start gap-4">
+                            <div class="w-11 h-11 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 font-black text-lg flex items-center justify-center shrink-0 group-hover:bg-cyan-500 group-hover:text-slate-950 transition">1</div>
+                            <div class="space-y-1">
+                                <div class="flex items-center justify-between gap-2">
+                                    <h4 class="font-bold text-white group-hover:text-cyan-300 transition ltr-badge">Master the OSI Model</h4>
+                                    <span class="text-xs text-cyan-400">إتقان نموذج OSI</span>
+                                </div>
+                                <p class="text-xs text-slate-300 leading-relaxed ltr-badge text-right">
+                                    "Understand all seven layers and their specific functions in network communication"
+                                </p>
+                                <p class="text-xs text-slate-400">
+                                    فهم جميع الطبقات السبع ووظائفها المحددة في الاتصالات الشبكية.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Objective 2 -->
+                        <div onclick="switchSection('tcpip')" class="glass-card rounded-xl p-4 cursor-pointer group flex items-start gap-4">
+                            <div class="w-11 h-11 rounded-xl bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 font-black text-lg flex items-center justify-center shrink-0 group-hover:bg-indigo-500 group-hover:text-white transition">2</div>
+                            <div class="space-y-1">
+                                <div class="flex items-center justify-between gap-2">
+                                    <h4 class="font-bold text-white group-hover:text-indigo-300 transition ltr-badge">Explore the TCP/IP Model</h4>
+                                    <span class="text-xs text-indigo-400">استكشاف نموذج TCP/IP</span>
+                                </div>
+                                <p class="text-xs text-slate-300 leading-relaxed ltr-badge text-right">
+                                    "Learn the four-layer structure that powers the modern internet"
+                                </p>
+                                <p class="text-xs text-slate-400">
+                                    تعلم البنية المكونة من أربع طبقات التي تشغّل الإنترنت الحديث.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Objective 3 -->
+                        <div onclick="switchSection('tcpip')" class="glass-card rounded-xl p-4 cursor-pointer group flex items-start gap-4">
+                            <div class="w-11 h-11 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-black text-lg flex items-center justify-center shrink-0 group-hover:bg-emerald-500 group-hover:text-slate-950 transition">3</div>
+                            <div class="space-y-1">
+                                <div class="flex items-center justify-between gap-2">
+                                    <h4 class="font-bold text-white group-hover:text-emerald-300 transition ltr-badge">Compare Both Models</h4>
+                                    <span class="text-xs text-emerald-400">المقارنة بين النموذجين</span>
+                                </div>
+                                <p class="text-xs text-slate-300 leading-relaxed ltr-badge text-right">
+                                    "Identify similarities, differences, and when to use each framework"
+                                </p>
+                                <p class="text-xs text-slate-400">
+                                    تحديد أوجه التشابه والاختلاف ومتى يتم استخدام كل إطار عمل.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Objective 4 -->
+                        <div onclick="switchSection('tools')" class="glass-card rounded-xl p-4 cursor-pointer group flex items-start gap-4">
+                            <div class="w-11 h-11 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 font-black text-lg flex items-center justify-center shrink-0 group-hover:bg-amber-500 group-hover:text-slate-950 transition">4</div>
+                            <div class="space-y-1">
+                                <div class="flex items-center justify-between gap-2">
+                                    <h4 class="font-bold text-white group-hover:text-amber-300 transition ltr-badge">Discover Essential Tools</h4>
+                                    <span class="text-xs text-amber-400">اكتشاف الأدوات الأساسية</span>
+                                </div>
+                                <p class="text-xs text-slate-300 leading-relaxed ltr-badge text-right">
+                                    "Discover Essential Tools"
+                                </p>
+                                <p class="text-xs text-slate-400">
+                                    التعرف على الأدوات الأساسية لاستكشاف أخطاء الشبكات واختبار الاتصال.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 3: Why Do We Need Network Models? -->
+                <div class="glass-panel rounded-2xl p-6 border-r-4 border-r-cyan-400">
+                    <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center">
+                                <i class="fa-solid fa-circle-question text-lg"></i>
+                            </span>
+                            <div>
+                                <h3 class="text-lg font-bold text-white">لماذا نحتاج إلى نماذج الشبكات؟ (<span class="ltr-badge">Why Do We Need Network Models?</span>)</h3>
+                                <p class="text-xs text-slate-400">الشريحة رقم 3 في العرض التقديمي: شريحة عنوان نقاش عصف ذهني</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-1 rounded-md text-xs font-mono bg-slate-800 text-cyan-300 border border-slate-700 ltr-badge">Slide 3</span>
+                        </div>
+                    </div>
+
+                    <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs text-slate-300 mb-4 flex items-start gap-2.5">
+                        <i class="fa-solid fa-circle-info text-cyan-400 mt-0.5"></i>
+                        <div>
+                            <strong class="text-white">ملاحظة أمانة المحتوى (Slide 3):</strong> وردت الشريحة رقم 3 في الملف المرفق كعنوان نقاش تفاعلي نصه الحرفي فقط: <code class="text-cyan-300 ltr-badge">"Why Do We Need Network Models?"</code> دون نقاط فرعية مكتوبة داخل الشريحة. لتسهيل الفهم وتكامل الهدف التعليمي، أضفنا النقاط التوضيحية التالية مع تمييزها بوضوح:
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                        <div class="glass-card rounded-xl p-4 space-y-2">
+                            <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold">[توضيح إضافي خارج المصدر]</span>
+                            <h4 class="font-bold text-white text-sm flex items-center gap-1.5">
+                                <i class="fa-solid fa-handshake text-cyan-400"></i> توحيد المعايير (Standardization)
+                            </h4>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                ضمان توافق الأجهزة والبرمجيات من شركات مصنعة مختلفة (Interoperability) للعمل معاً بسلاسة.
+                            </p>
+                        </div>
+                        <div class="glass-card rounded-xl p-4 space-y-2">
+                            <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold">[توضيح إضافي خارج المصدر]</span>
+                            <h4 class="font-bold text-white text-sm flex items-center gap-1.5">
+                                <i class="fa-solid fa-cubes text-indigo-400"></i> تقسيم التعقيد (Modularity)
+                            </h4>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                تفكيك عملية الاتصال الشبكي المعقدة إلى طبقات أصغر يسهل فهمها وتطويرها بشكل مستقل.
+                            </p>
+                        </div>
+                        <div class="glass-card rounded-xl p-4 space-y-2">
+                            <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold">[توضيح إضافي خارج المصدر]</span>
+                            <h4 class="font-bold text-white text-sm flex items-center gap-1.5">
+                                <i class="fa-solid fa-screwdriver-wrench text-emerald-400"></i> تسهيل تشخيص الأعطال
+                            </h4>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                تمكين مهندس الشبكات من حصر المشكلة في طبقة محددة (مثل الكابل في الطبقة 1 أو التوجيه في الطبقة 3).
+                            </p>
+                        </div>
+                        <div class="glass-card rounded-xl p-4 space-y-2">
+                            <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold">[توضيح إضافي خارج المصدر]</span>
+                            <h4 class="font-bold text-white text-sm flex items-center gap-1.5">
+                                <i class="fa-solid fa-code-branch text-amber-400"></i> التطوير المستقل للطبقات
+                            </h4>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                التغيير في تقنيات طبقة معينة (مثل الانتقال من كابل نحاسي إلى Wi-Fi) لا يجبرنا على إعادة كتابة تطبيقات الويب.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Coverage Map (All 13 Slides Verification) -->
+                <div class="glass-panel rounded-2xl p-6">
+                    <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-map-location-dot text-emerald-400"></i>
+                                خريطة تغطية المصدر الشاملة (<span class="ltr-badge">Content Coverage Map - 13 Slides</span>)
+                            </h3>
+                            <p class="text-xs text-slate-400">انقر على أي شريحة للانتقال الفوري إلى القسم التفاعلي المخصص لها داخل المنصة</p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">تغطية موثقة 100%</span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right text-xs border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-700 text-slate-300 bg-slate-900/70">
+                                    <th class="p-3 font-bold">رقم الشريحة</th>
+                                    <th class="p-3 font-bold">العنوان الأصلي في الملف</th>
+                                    <th class="p-3 font-bold">تفاصيل المحتوى المستخرج</th>
+                                    <th class="p-3 font-bold">القسم في المنصة</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/80 text-slate-300">
+                                <tr class="hover:bg-slate-800/40 transition">
+                                    <td class="p-3 font-mono text-cyan-400 ltr-badge">Slide 1</td>
+                                    <td class="p-3 font-semibold ltr-badge">OSI &amp; TCP/IP Models</td>
+                                    <td class="p-3">IEEE KSB – Networking Track | Week 2 | Instructor: Ahmed Mohamed / Kareem Osama</td>
+                                    <td class="p-3"><button onclick="switchSection('dashboard')" class="text-cyan-400 hover:underline">لوحة التحكم</button></td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/40 transition">
+                                    <td class="p-3 font-mono text-cyan-400 ltr-badge">Slide 2</td>
+                                    <td class="p-3 font-semibold ltr-badge">Session Objectives</td>
+                                    <td class="p-3">الأهداف الأربعة: Master OSI, Explore TCP/IP, Compare Both Models, Discover Essential Tools</td>
+                                    <td class="p-3"><button onclick="switchSection('dashboard')" class="text-cyan-400 hover:underline">لوحة التحكم</button></td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/40 transition">
+                                    <td class="p-3 font-mono text-cyan-400 ltr-badge">Slide 3</td>
+                                    <td class="p-3 font-semibold ltr-badge">Why Do We Need Network Models?</td>
+                                    <td class="p-3">عنوان نقاش رئيسي + 4 بطاقات توضيحية مميزة بشارة [توضيح إضافي خارج المصدر]</td>
+                                    <td class="p-3"><button onclick="switchSection('dashboard')" class="text-cyan-400 hover:underline">لوحة التحكم</button></td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/40 transition">
+                                    <td class="p-3 font-mono text-cyan-400 ltr-badge">Slide 4</td>
+                                    <td class="p-3 font-semibold ltr-badge">TCP vs. UDP</td>
+                                    <td class="p-3">مقارنة كاملة (5 نقاط لكل بروتوكول) + محاكي نقل الحزم التفاعلي + مختبر اختيار التطبيقات</td>
+                                    <td class="p-3"><button onclick="switchSection('tcpudp')" class="text-cyan-400 hover:underline">مقارنة TCP ضد UDP</button></td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/40 transition">
+                                    <td class="p-3 font-mono text-cyan-400 ltr-badge">Slide 5</td>
+                                    <td class="p-3 font-semibold ltr-badge">OSI Model (7-Layer Table)</td>
+                                    <td class="p-3">الجدول الكامل للطبقات السبع (Layer, Notes, Encapsulation, Device, Protocol)</td>
+                                    <td class="p-3"><button onclick="switchSection('osi')" class="text-cyan-400 hover:underline">نموذج OSI التفاعلي</button></td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/40 transition">
+                                    <td class="p-3 font-mono text-cyan-400 ltr-badge">Slide 6</td>
+                                    <td class="p-3 font-semibold ltr-badge">Data Encapsulation in OSI Model</td>
+                                    <td class="p-3">مراحل التغليف الأربع (Transport, Network, Data Link, Physical) + محاكي التغليف وحاسبة PDU</td>
+                                    <td class="p-3"><button onclick="switchSection('encapsulation')" class="text-cyan-400 hover:underline">محاكي التغليف</button></td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/40 transition">
+                                    <td class="p-3 font-mono text-cyan-400 ltr-badge">Slide 7 &amp; 8</td>
+                                    <td class="p-3 font-semibold ltr-badge">TCP/IP Model – Layers</td>
+                                    <td class="p-3">الطبقات الأربع (Application, Transport, Internet, Network Access) ومقابلاتها في OSI</td>
+                                    <td class="p-3"><button onclick="switchSection('tcpip')" class="text-cyan-400 hover:underline">نموذج TCP/IP والمقارنة</button></td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/40 transition">
+                                    <td class="p-3 font-mono text-cyan-400 ltr-badge">Slide 9</td>
+                                    <td class="p-3 font-semibold ltr-badge">Activity Time</td>
+                                    <td class="p-3">شريحة نشاط عملي حُوّلت إلى تحدي مطابقة تفاعلي للطبقات والأجهزة والبروتوكولات</td>
+                                    <td class="p-3"><button onclick="switchSection('tools')" class="text-cyan-400 hover:underline">أدوات الشبكات والنشاط</button></td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/40 transition">
+                                    <td class="p-3 font-mono text-cyan-400 ltr-badge">Slide 10 &amp; 11</td>
+                                    <td class="p-3 font-semibold ltr-badge">Why Use Networking Tools?</td>
+                                    <td class="p-3">Troubleshooting Networks (3 أهداف) &amp; Testing Connectivity (3 أهداف) + محاكي طرفية</td>
+                                    <td class="p-3"><button onclick="switchSection('tools')" class="text-cyan-400 hover:underline">أدوات الشبكات والنشاط</button></td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/40 transition">
+                                    <td class="p-3 font-mono text-cyan-400 ltr-badge">Slide 12 &amp; 13</td>
+                                    <td class="p-3 font-semibold ltr-badge">Session wrap up &amp; Thank You</td>
+                                    <td class="p-3">ختام الجلسة + الملخص الذكي + البطاقات التعليمية + الاختبار التقييمي الشامل</td>
+                                    <td class="p-3"><button onclick="switchSection('summary')" class="text-cyan-400 hover:underline">الملخص والاختبار</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =====================================================================
+                 SECTION 2: INTERACTIVE OSI 7-LAYER EXPLORER (Slide 5)
+                 ===================================================================== -->
+            <section id="sec-osi" class="unit-section hidden space-y-6">
+                <div class="glass-panel rounded-2xl p-6">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="px-2.5 py-0.5 rounded text-xs font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 ltr-badge">Slide 5</span>
+                                <span class="text-xs text-slate-400">جدول ومستكشف الطبقات السبع الكامل</span>
+                            </div>
+                            <h2 class="text-2xl font-black text-white">نموذج الاتصال المفتوح (<span class="ltr-badge text-cyan-400">OSI Model – 7 Layers</span>)</h2>
+                        </div>
+                        <button onclick="toggleBookmark('osi-table', 'جدول طبقات OSI السبع الكامل (Slide 5)')" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-amber-400 border border-slate-700 transition">
+                            <i class="fa-regular fa-bookmark ml-1"></i> حفظ الجدول
+                        </button>
+                    </div>
+
+                    <!-- Interactive 7-Layer Stack + Inspector Split View -->
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                        <!-- Left/Right Stack Selector (5 cols) -->
+                        <div class="lg:col-span-5 space-y-2">
+                            <div class="text-xs text-slate-400 mb-2 flex items-center justify-between">
+                                <span>انقر على أي طبقة لفحص تفاصيلها من المصدر:</span>
+                                <span class="text-cyan-400 font-semibold">من الأعلى (7) إلى الأسفل (1)</span>
+                            </div>
+                            <div id="osiStackButtons" class="space-y-2">
+                                <!-- Rendered via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Layer Detail Inspector Card (7 cols) -->
+                        <div id="osiInspectorCard" class="lg:col-span-7 glass-card rounded-2xl p-6 border border-cyan-500/30 sticky top-24">
+                            <!-- Rendered dynamically via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Exact Source Table from Slide 5 with Filter/Sort -->
+                <div class="glass-panel rounded-2xl p-6">
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-white">الجدول المرجعي الكامل لنموذج <span class="ltr-badge">OSI</span> (مطابق 100% للشريحة 5)</h3>
+                            <p class="text-xs text-slate-400">يحتوي على الأعمدة الخمسة الأصلية: <span class="ltr-badge">layer | Notes | Encapsulation | Device | Protocol</span></p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="reverseOsiTableOrder()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-cyan-300 border border-slate-700 transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-sort"></i>
+                                <span id="osiSortBtnLabel">ترتيب تصاعدي (1 ← 7)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-xl border border-slate-800">
+                        <table class="w-full text-right text-xs md:text-sm border-collapse">
+                            <thead>
+                                <tr class="bg-slate-900 text-cyan-300 border-b border-slate-700 font-mono">
+                                    <th class="p-3.5">Layer (الطبقة)</th>
+                                    <th class="p-3.5">Notes (الملاحظات والوظيفة)</th>
+                                    <th class="p-3.5">Encapsulation (وحدة البيانات)</th>
+                                    <th class="p-3.5">Device (الجهاز)</th>
+                                    <th class="p-3.5">Protocol (البروتوكولات والملفات)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="osiFullTableBody" class="divide-y divide-slate-800/90">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =====================================================================
+                 SECTION 3: DATA ENCAPSULATION SIMULATOR & CALCULATOR (Slide 6)
+                 ===================================================================== -->
+            <section id="sec-encapsulation" class="unit-section hidden space-y-6">
+                <div class="glass-panel rounded-2xl p-6">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="px-2.5 py-0.5 rounded text-xs font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 ltr-badge">Slide 6</span>
+                                <span class="text-xs text-slate-400">رحلة تغليف البيانات عبر طبقات OSI</span>
+                            </div>
+                            <h2 class="text-2xl font-black text-white">تغليف البيانات (<span class="ltr-badge text-cyan-400">Data Encapsulation in OSI Model</span>)</h2>
+                        </div>
+                        <button onclick="toggleBookmark('slide6-encap', 'مراحل تغليف البيانات الأربع في نموذج OSI (Slide 6)')" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-amber-400 border border-slate-700 transition">
+                            <i class="fa-regular fa-bookmark ml-1"></i> حفظ في المفضلة
+                        </button>
+                    </div>
+
+                    <!-- Source Steps Cards (Exact Text from Slide 6) -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3.5 mb-6">
+                        <div class="glass-card rounded-xl p-4 border-t-4 border-t-amber-400">
+                            <div class="text-xs font-mono text-amber-300 mb-1 ltr-badge">1. Transport Layer (Layer 4)</div>
+                            <p class="text-xs text-white font-semibold ltr-badge mb-2 text-right">"Data is segmented, TCP/UDP headers are added."</p>
+                            <p class="text-xs text-slate-300">يتم تقسيم البيانات (Segmented) وإضافة ترويسة <span class="ltr-badge">TCP/UDP</span> لتكوين <strong class="text-amber-300 ltr-badge">Segment</strong>.</p>
+                        </div>
+                        <div class="glass-card rounded-xl p-4 border-t-4 border-t-emerald-400">
+                            <div class="text-xs font-mono text-emerald-300 mb-1 ltr-badge">2. Network Layer (Layer 3)</div>
+                            <p class="text-xs text-white font-semibold ltr-badge mb-2 text-right">"IP header is added → forms a packet."</p>
+                            <p class="text-xs text-slate-300">تُضاف ترويسة <span class="ltr-badge">IP Header</span> (العناوين المنطقية) فتتكون الحزمة <strong class="text-emerald-300 ltr-badge">Packet</strong>.</p>
+                        </div>
+                        <div class="glass-card rounded-xl p-4 border-t-4 border-t-cyan-400">
+                            <div class="text-xs font-mono text-cyan-300 mb-1 ltr-badge">3. Data Link Layer (Layer 2)</div>
+                            <p class="text-xs text-white font-semibold ltr-badge mb-2 text-right">"MAC addresses + Frame header/trailer are added."</p>
+                            <p class="text-xs text-slate-300">تُضاف عناوين <span class="ltr-badge">MAC</span> وترويسة وذيل الإطار (<span class="ltr-badge">Header/Trailer</span>) لتكوين <strong class="text-cyan-300 ltr-badge">Frame</strong>.</p>
+                        </div>
+                        <div class="glass-card rounded-xl p-4 border-t-4 border-t-rose-400">
+                            <div class="text-xs font-mono text-rose-300 mb-1 ltr-badge">4. Physical Layer (Layer 1)</div>
+                            <p class="text-xs text-white font-semibold ltr-badge mb-2 text-right">"Data is converted into bits and transmitted over the medium."</p>
+                            <p class="text-xs text-slate-300">تتحول البيانات إلى بتات خام (<strong class="text-rose-300 ltr-badge">Bits 0/1</strong>) وتُنقل عبر الوسط المادي.</p>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Step-by-Step Encapsulation Animator -->
+                    <div class="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-5">
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                                <h3 class="font-bold text-white text-base flex items-center gap-2">
+                                    <i class="fa-solid fa-boxes-packing text-cyan-400"></i>
+                                    المحاكي البصري لعملية التغليف وفك التغليف (<span class="ltr-badge">Interactive Encapsulation Visualizer</span>)
+                                </h3>
+                                <p class="text-xs text-slate-400">تحكم في خطوات إضافة الترويسات (Headers &amp; Trailers) وشاهد كيف تتغير وحدة البيانات (PDU)</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="stepEncapsulation(-1)" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 border border-slate-700 transition">
+                                    <i class="fa-solid fa-chevron-right ml-1"></i> الخطوة السابقة
+                                </button>
+                                <button onclick="stepEncapsulation(1)" class="px-3.5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-extrabold transition shadow-lg shadow-cyan-500/20">
+                                    الخطوة التالية <i class="fa-solid fa-chevron-left mr-1"></i>
+                                </button>
+                                <button onclick="autoPlayEncapsulation()" id="autoEncapBtn" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition">
+                                    <i class="fa-solid fa-play ml-1"></i> تشغيل تلقائي
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Step Indicator Pills -->
+                        <div class="grid grid-cols-5 gap-2 text-center text-xs">
+                            <button onclick="setEncapsulationStep(0)" id="encStepBtn-0" class="p-2.5 rounded-xl border transition font-bold">1. الطبقات العليا (Data)</button>
+                            <button onclick="setEncapsulationStep(1)" id="encStepBtn-1" class="p-2.5 rounded-xl border transition font-bold">2. النقل (Segment)</button>
+                            <button onclick="setEncapsulationStep(2)" id="encStepBtn-2" class="p-2.5 rounded-xl border transition font-bold">3. الشبكة (Packet)</button>
+                            <button onclick="setEncapsulationStep(3)" id="encStepBtn-3" class="p-2.5 rounded-xl border transition font-bold">4. ربط البيانات (Frame)</button>
+                            <button onclick="setEncapsulationStep(4)" id="encStepBtn-4" class="p-2.5 rounded-xl border transition font-bold">5. الفيزيائية (Bits)</button>
+                        </div>
+
+                        <!-- Visual Nested PDU Box -->
+                        <div id="encapVisualStage" class="min-h-[190px] rounded-2xl bg-slate-950/90 border border-slate-800 p-6 flex flex-col items-center justify-center text-center transition-all">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive PDU & Overhead Calculator -->
+                <div class="glass-panel rounded-2xl p-6 border border-indigo-500/30">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-9 h-9 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                                <i class="fa-solid fa-calculator"></i>
+                            </span>
+                            <div>
+                                <h3 class="text-lg font-bold text-white">حاسبة حجم التغليف ووحدات البيانات (<span class="ltr-badge">PDU &amp; Encapsulation Overhead Calculator</span>)</h3>
+                                <p class="text-xs text-slate-400">احسب عملياً كيف يزداد حجم البيانات عند إضافة ترويسات <span class="ltr-badge">TCP/UDP</span> و <span class="ltr-badge">IP</span> و <span class="ltr-badge">Frame Header/Trailer</span></p>
+                            </div>
+                        </div>
+                        <span class="text-[11px] px-2.5 py-1 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30 font-semibold">[أداة حسابية تفاعلية مساندة]</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        <div class="lg:col-span-5 space-y-4 bg-slate-900/70 p-4 rounded-xl border border-slate-800">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-300 mb-1.5">حجم بيانات التطبيق الأصلية (<span class="ltr-badge">Application Data Payload</span> بالبايت):</label>
+                                <input id="calcDataInput" type="number" min="1" max="1500" value="100" oninput="calculateEncapsulationSize()"
+                                       class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-3.5 py-2 text-sm text-white font-mono outline-none">
+                                <p id="calcErrorMsg" class="hidden text-xs text-rose-400 mt-1"></p>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-300 mb-1.5">بروتوكول طبقة النقل (<span class="ltr-badge">Transport Protocol - Slide 4 &amp; 6</span>):</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button id="calcProtoTCP" onclick="setCalcProto('TCP')" class="py-2 px-3 rounded-xl text-xs font-bold border border-cyan-500 bg-cyan-500/20 text-cyan-300 transition ltr-badge">
+                                        TCP (+20 Bytes Header)
+                                    </button>
+                                    <button id="calcProtoUDP" onclick="setCalcProto('UDP')" class="py-2 px-3 rounded-xl text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 transition ltr-badge">
+                                        UDP (+8 Bytes Header)
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="text-xs text-slate-400 space-y-1 pt-2 border-t border-slate-800">
+                                <div class="flex justify-between"><span>ترويسة الشبكة (<span class="ltr-badge">IPv4 Header - Layer 3</span>):</span> <span class="font-mono text-emerald-400 ltr-badge">+20 Bytes</span></div>
+                                <div class="flex justify-between"><span>ترويسة وذيل الإطار (<span class="ltr-badge">Frame Header 14B + Trailer 4B</span>):</span> <span class="font-mono text-cyan-400 ltr-badge">+18 Bytes</span></div>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <div class="glass-card rounded-xl p-3.5">
+                                <div class="text-[11px] text-slate-400">الطبقات 7-5 (<span class="ltr-badge">Data</span>)</div>
+                                <div id="resDataSize" class="text-xl font-black text-white font-mono mt-1 ltr-badge">100 Bytes</div>
+                                <div class="text-[11px] text-slate-400 mt-1">البيانات الخام قبل التغليف</div>
+                            </div>
+                            <div class="glass-card rounded-xl p-3.5">
+                                <div class="text-[11px] text-amber-300">الطبقة 4 (<span class="ltr-badge">Segment</span>)</div>
+                                <div id="resSegmentSize" class="text-xl font-black text-amber-400 font-mono mt-1 ltr-badge">120 Bytes</div>
+                                <div id="resSegmentNote" class="text-[11px] text-slate-400 mt-1">Data + TCP Header (20B)</div>
+                            </div>
+                            <div class="glass-card rounded-xl p-3.5">
+                                <div class="text-[11px] text-emerald-300">الطبقة 3 (<span class="ltr-badge">Packet</span>)</div>
+                                <div id="resPacketSize" class="text-xl font-black text-emerald-400 font-mono mt-1 ltr-badge">140 Bytes</div>
+                                <div class="text-[11px] text-slate-400 mt-1">Segment + IP Header (20B)</div>
+                            </div>
+                            <div class="glass-card rounded-xl p-3.5">
+                                <div class="text-[11px] text-cyan-300">الطبقة 2 (<span class="ltr-badge">Frame</span>)</div>
+                                <div id="resFrameSize" class="text-xl font-black text-cyan-400 font-mono mt-1 ltr-badge">158 Bytes</div>
+                                <div class="text-[11px] text-slate-400 mt-1">Packet + MAC Hdr/Trailer (18B)</div>
+                            </div>
+                            <div class="glass-card rounded-xl p-3.5">
+                                <div class="text-[11px] text-rose-300">الطبقة 1 (<span class="ltr-badge">Bits</span>)</div>
+                                <div id="resBitsCount" class="text-xl font-black text-rose-400 font-mono mt-1 ltr-badge">1264 Bits</div>
+                                <div class="text-[11px] text-slate-400 mt-1">إجمالي البتات (Frame × 8)</div>
+                            </div>
+                            <div class="glass-card rounded-xl p-3.5">
+                                <div class="text-[11px] text-indigo-300">نسبة الترويسات (<span class="ltr-badge">Overhead %</span>)</div>
+                                <div id="resOverheadPct" class="text-xl font-black text-indigo-400 font-mono mt-1 ltr-badge">36.7%</div>
+                                <div id="resOverheadNote" class="text-[11px] text-slate-400 mt-1">ترويسات مضافة: 58 بايت</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =====================================================================
+                 SECTION 4: TCP vs. UDP INTERACTIVE LAB (Slide 4)
+                 ===================================================================== -->
+            <section id="sec-tcpudp" class="unit-section hidden space-y-6">
+                <div class="glass-panel rounded-2xl p-6">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="px-2.5 py-0.5 rounded text-xs font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 ltr-badge">Slide 4</span>
+                                <span class="text-xs text-slate-400">مقارنة بروتوكولات طبقة النقل (Transport Layer Protocols)</span>
+                            </div>
+                            <h2 class="text-2xl font-black text-white">مقارنة شاملة: <span class="ltr-badge text-cyan-400">TCP vs. UDP</span></h2>
+                        </div>
+                        <button onclick="toggleBookmark('slide4-tcpudp', 'مقارنة TCP و UDP الكاملة (Slide 4)')" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-amber-400 border border-slate-700 transition">
+                            <i class="fa-regular fa-bookmark ml-1"></i> حفظ المقارنة
+                        </button>
+                    </div>
+
+                    <!-- Exact Side-by-Side Comparison Cards from Slide 4 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- TCP Card -->
+                        <div class="glass-card rounded-2xl p-6 border-t-4 border-t-cyan-400 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="text-xs font-mono text-cyan-400 ltr-badge">Reliable &amp; Connection-Oriented</span>
+                                    <h3 class="text-xl font-black text-white ltr-badge">TCP (Transmission Control Protocol)</h3>
+                                </div>
+                                <div class="w-12 h-12 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-xl">
+                                    <i class="fa-solid fa-shield-halved"></i>
+                                </div>
+                            </div>
+
+                            <ul class="space-y-3 text-xs md:text-sm">
+                                <li class="p-3 rounded-xl bg-slate-900/75 border border-slate-800 flex items-start gap-3">
+                                    <i class="fa-solid fa-plug-circle-check text-cyan-400 mt-1"></i>
+                                    <div>
+                                        <div class="font-bold text-white ltr-badge text-right">Connection-oriented (requires a connection before data transfer).</div>
+                                        <div class="text-slate-400 text-xs mt-0.5">اتصالي التوجه: يتطلب إنشاء اتصال أولاً قبل البدء بنقل البيانات.</div>
+                                    </div>
+                                </li>
+                                <li class="p-3 rounded-xl bg-slate-900/75 border border-slate-800 flex items-start gap-3">
+                                    <i class="fa-solid fa-rotate text-cyan-400 mt-1"></i>
+                                    <div>
+                                        <div class="font-bold text-white ltr-badge text-right">Reliable (ensures data delivery, retransmits if lost).</div>
+                                        <div class="text-slate-400 text-xs mt-0.5">موثوق: يضمن تسليم البيانات، ويعيد إرسال الحزم إذا فُقدت.</div>
+                                    </div>
+                                </li>
+                                <li class="p-3 rounded-xl bg-slate-900/75 border border-slate-800 flex items-start gap-3">
+                                    <i class="fa-solid fa-Sliders text-cyan-400 mt-1"></i>
+                                    <div>
+                                        <div class="font-bold text-white ltr-badge text-right">Error-checking and flow control included.</div>
+                                        <div class="text-slate-400 text-xs mt-0.5">يتضمن فحص الأخطاء والتحكم في تدفق البيانات (Flow Control).</div>
+                                    </div>
+                                </li>
+                                <li class="p-3 rounded-xl bg-slate-900/75 border border-slate-800 flex items-start gap-3">
+                                    <i class="fa-solid fa-gauge text-amber-400 mt-1"></i>
+                                    <div>
+                                        <div class="font-bold text-white ltr-badge text-right">Slower due to overhead.</div>
+                                        <div class="text-slate-400 text-xs mt-0.5">أبطأ نسبياً بسبب العبء الإضافي (Overhead) للترويسات والتأكيدات.</div>
+                                    </div>
+                                </li>
+                                <li class="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-start gap-3">
+                                    <i class="fa-solid fa-laptop-file text-cyan-300 mt-1"></i>
+                                    <div>
+                                        <div class="font-bold text-cyan-200 ltr-badge text-right">Used for applications where accuracy matters (e.g., Web browsing, Email, File transfer).</div>
+                                        <div class="text-slate-300 text-xs mt-0.5">يُستخدم في التطبيقات التي تهم فيها الدقة (تصفح الويب، البريد الإلكتروني، نقل الملفات).</div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- UDP Card -->
+                        <div class="glass-card rounded-2xl p-6 border-t-4 border-t-emerald-400 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="text-xs font-mono text-emerald-400 ltr-badge">Fast &amp; Connectionless</span>
+                                    <h3 class="text-xl font-black text-white ltr-badge">UDP (User Datagram Protocol)</h3>
+                                </div>
+                                <div class="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-xl">
+                                    <i class="fa-solid fa-bolt"></i>
+                                </div>
+                            </div>
+
+                            <ul class="space-y-3 text-xs md:text-sm">
+                                <li class="p-3 rounded-xl bg-slate-900/75 border border-slate-800 flex items-start gap-3">
+                                    <i class="fa-solid fa-paper-plane text-emerald-400 mt-1"></i>
+                                    <div>
+                                        <div class="font-bold text-white ltr-badge text-right">Connectionless (no need for setup before sending data).</div>
+                                        <div class="text-slate-400 text-xs mt-0.5">غير اتصالي: لا يحتاج إلى إعداد اتصال مسبق قبل إرسال البيانات.</div>
+                                    </div>
+                                </li>
+                                <li class="p-3 rounded-xl bg-slate-900/75 border border-slate-800 flex items-start gap-3">
+                                    <i class="fa-solid fa-triangle-exclamation text-amber-400 mt-1"></i>
+                                    <div>
+                                        <div class="font-bold text-white ltr-badge text-right">Unreliable (no guarantee of delivery, no retransmission).</div>
+                                        <div class="text-slate-400 text-xs mt-0.5">غير موثوق: لا يوجد ضمان لوصول البيانات، ولا يعيد إرسال المفقود.</div>
+                                    </div>
+                                </li>
+                                <li class="p-3 rounded-xl bg-slate-900/75 border border-slate-800 flex items-start gap-3">
+                                    <i class="fa-solid fa-feather text-emerald-400 mt-1"></i>
+                                    <div>
+                                        <div class="font-bold text-white ltr-badge text-right">Lightweight (less overhead, faster).</div>
+                                        <div class="text-slate-400 text-xs mt-0.5">خفيف الوزن: عبء ترويسات أقل (Less overhead) وأسرع في النقل.</div>
+                                    </div>
+                                </li>
+                                <li class="p-3 rounded-xl bg-slate-900/75 border border-slate-800 flex items-start gap-3">
+                                    <i class="fa-solid fa-water text-emerald-400 mt-1"></i>
+                                    <div>
+                                        <div class="font-bold text-white ltr-badge text-right">No flow control.</div>
+                                        <div class="text-slate-400 text-xs mt-0.5">لا يحتوي على آلية للتحكم في التدفق (No flow control).</div>
+                                    </div>
+                                </li>
+                                <li class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-3">
+                                    <i class="fa-solid fa-gamepad text-emerald-300 mt-1"></i>
+                                    <div>
+                                        <div class="font-bold text-emerald-200 ltr-badge text-right">Used for real-time applications where speed matters (e.g., Video streaming, Online gaming, VoIP).</div>
+                                        <div class="text-slate-300 text-xs mt-0.5">يُستخدم في تطبيقات الوقت الفعلي حيث السرعة هي الأهم (بث الفيديو، الألعاب الأونلاين، مكالمات VoIP).</div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Transmission Simulator (TCP Handshake/Retransmission vs UDP Stream) -->
+                <div class="glass-panel rounded-2xl p-6">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-satellite-dish text-cyan-400"></i>
+                                مختبر محاكاة الإرسال وفقدان الحزم (<span class="ltr-badge">Live Packet Transmission Simulator</span>)
+                            </h3>
+                            <p class="text-xs text-slate-400">شاهد الفرق العملي بين <span class="ltr-badge">TCP</span> و <span class="ltr-badge">UDP</span> عند إرسال 4 حزم مع حدوث فقدان للحزمة رقم #3 في الطريق</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="runPacketSimulation('TCP')" class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold text-xs transition shadow-lg shadow-cyan-500/20">
+                                <i class="fa-solid fa-play ml-1"></i> محاكاة إرسال TCP
+                            </button>
+                            <button onclick="runPacketSimulation('UDP')" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs transition shadow-lg shadow-emerald-500/20">
+                                <i class="fa-solid fa-bolt ml-1"></i> محاكاة إرسال UDP
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="simLogContainer" class="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs space-y-2 min-h-[150px]">
+                        <div class="text-slate-400 text-center py-8">اضغط على أحد الزرين أعلاه لبدء محاكاة نقل البيانات ومراقبة سلوك البروتوكول...</div>
+                    </div>
+                </div>
+
+                <!-- Interactive Scenario Decision Lab: Choose TCP or UDP -->
+                <div class="glass-panel rounded-2xl p-6">
+                    <h3 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-vial-circle-check text-indigo-400"></i>
+                        تحدي اختيار البروتوكول حسب التطبيق (<span class="ltr-badge">Application Protocol Matcher - Slide 4</span>)
+                    </h3>
+                    <p class="text-xs text-slate-400 mb-4">اختر التطبيق من القائمة ثم حدد هل يعمل عبر <span class="ltr-badge">TCP</span> أم <span class="ltr-badge">UDP</span> وفقاً لأمثلة الشريحة 4:</p>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 mb-4" id="appScenarioGrid">
+                        <!-- Populated via JS -->
+                    </div>
+                    <div id="appScenarioFeedback" class="hidden p-4 rounded-xl border text-xs md:text-sm"></div>
+                </div>
+            </section>
+
+            <!-- =====================================================================
+                 SECTION 5: TCP/IP MODEL & STRUCTURAL COMPARISON (Slides 7 & 8)
+                 ===================================================================== -->
+            <section id="sec-tcpip" class="unit-section hidden space-y-6">
+                <div class="glass-panel rounded-2xl p-6">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="px-2.5 py-0.5 rounded text-xs font-mono bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 ltr-badge">Slides 7 &amp; 8</span>
+                                <span class="text-xs text-slate-400">البنية الرباعية التي تشغل الإنترنت الحديث ومقابلاتها في OSI</span>
+                            </div>
+                            <h2 class="text-2xl font-black text-white">نموذج <span class="ltr-badge text-indigo-400">TCP/IP Model – 4 Layers</span> والمقارنة الهيكلية</h2>
+                        </div>
+                        <button onclick="toggleBookmark('slides78-tcpip', 'طبقات نموذج TCP/IP الأربع ومقابلاتها في OSI (Slides 7 & 8)')" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-amber-400 border border-slate-700 transition">
+                            <i class="fa-regular fa-bookmark ml-1"></i> حفظ في المفضلة
+                        </button>
+                    </div>
+
+                    <!-- Interactive Visual Mapping (OSI 7 Layers <---> TCP/IP 4 Layers) -->
+                    <div class="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 mb-6">
+                        <div class="text-xs text-slate-300 mb-4 flex items-center justify-between flex-wrap gap-2">
+                            <span><i class="fa-solid fa-wand-magic-sparkles text-cyan-400 ml-1"></i> <strong>أداة الربط الهيكلي التفاعلي:</strong> انقر على أي طبقة في نموذج <span class="ltr-badge">TCP/IP</span> لإضاءة الطبقات المكافئة لها في نموذج <span class="ltr-badge">OSI</span> وعرض تفاصيل الشريحة 7 و 8:</span>
+                            <span class="text-cyan-400 font-mono ltr-badge">OSI (7) ⇄ TCP/IP (4)</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                            <!-- TCP/IP 4 Layers Column -->
+                            <div class="lg:col-span-5 flex flex-col justify-between space-y-3" id="tcpipInteractiveCol">
+                                <!-- Populated via JS -->
+                            </div>
+
+                            <!-- OSI Equivalent Column -->
+                            <div class="lg:col-span-7 glass-card rounded-2xl p-5 border border-indigo-500/30 flex flex-col justify-between" id="tcpipMappingDetailBox">
+                                <!-- Populated via JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- All 4 Layers Full Cards (Exact Verbatim Content from Slides 7 & 8) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- 1. Application Layer (Slide 7) -->
+                        <div class="glass-card rounded-2xl p-5 border-r-4 border-r-cyan-400 space-y-2.5">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-mono px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 ltr-badge">Slide 7 | Layer 4 (Top)</span>
+                                <span class="text-xs text-slate-400">طبقة التطبيقات</span>
+                            </div>
+                            <h3 class="text-lg font-black text-white ltr-badge">1. Application Layer</h3>
+                            <ul class="space-y-2 text-xs text-slate-200 list-disc list-inside">
+                                <li class="ltr-badge text-right">Provides network services to end-users <span class="text-slate-400 block pr-4">(تقدم خدمات الشبكة للمستخدمين النهائيين)</span></li>
+                                <li class="ltr-badge text-right">Includes HTTP, FTP, SMTP, DNS <span class="text-slate-400 block pr-4">(تشمل بروتوكولات HTTP, FTP, SMTP, DNS)</span></li>
+                                <li class="ltr-badge text-right font-bold text-cyan-300">Equivalent to OSI Application + Presentation + Session <span class="text-slate-300 font-normal block pr-4">(تعادل طبقات التطبيقات + العرض + الجلسة في نموذج OSI)</span></li>
+                            </ul>
+                        </div>
+
+                        <!-- 2. Transport Layer (Slide 7) -->
+                        <div class="glass-card rounded-2xl p-5 border-r-4 border-r-amber-400 space-y-2.5">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 ltr-badge">Slide 7 | Layer 3</span>
+                                <span class="text-xs text-slate-400">طبقة النقل</span>
+                            </div>
+                            <h3 class="text-lg font-black text-white ltr-badge">2. Transport Layer</h3>
+                            <ul class="space-y-2 text-xs text-slate-200 list-disc list-inside">
+                                <li class="ltr-badge text-right">Ensures reliable delivery (TCP) or fast delivery (UDP) <span class="text-slate-400 block pr-4">(تضمن التسليم الموثوق عبر TCP أو التسليم السريع عبر UDP)</span></li>
+                                <li class="ltr-badge text-right">Responsible for segmentation and error control <span class="text-slate-400 block pr-4">(مسؤولة عن تقسيم البيانات والتحكم في الأخطاء)</span></li>
+                                <li class="ltr-badge text-right font-bold text-amber-300">Example: TCP (web browsing), UDP (video streaming, gaming) <span class="text-slate-300 font-normal block pr-4">(مثال: TCP لتصفح الويب، وUDP لبث الفيديو والألعاب)</span></li>
+                            </ul>
+                        </div>
+
+                        <!-- 3. Internet Layer (Slide 8) -->
+                        <div class="glass-card rounded-2xl p-5 border-r-4 border-r-emerald-400 space-y-2.5">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 ltr-badge">Slide 8 | Layer 2</span>
+                                <span class="text-xs text-slate-400">طبقة الإنترنت</span>
+                            </div>
+                            <h3 class="text-lg font-black text-white ltr-badge">3. Internet Layer</h3>
+                            <ul class="space-y-2 text-xs text-slate-200 list-disc list-inside">
+                                <li class="ltr-badge text-right">Handles logical addressing using IP addresses. <span class="text-slate-400 block pr-4">(تتعامل مع العنونة المنطقية باستخدام عناوين IP)</span></li>
+                                <li class="ltr-badge text-right">Responsible for routing packets across networks. <span class="text-slate-400 block pr-4">(مسؤولة عن توجيه الحزم عبر الشبكات)</span></li>
+                                <li class="ltr-badge text-right">Ensures packet delivery from source to destination. <span class="text-slate-400 block pr-4">(تضمن إيصال الحزم من المصدر إلى الوجهة)</span></li>
+                                <li class="ltr-badge text-right font-bold text-emerald-300">Uses protocols like IP, ICMP. <span class="text-slate-300 font-normal block pr-4">(تستخدم بروتوكولات مثل IP و ICMP، وتعادل طبقة Network في OSI)</span></li>
+                            </ul>
+                        </div>
+
+                        <!-- 4. Network Access Layer (Slide 8) -->
+                        <div class="glass-card rounded-2xl p-5 border-r-4 border-r-rose-400 space-y-2.5">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-mono px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 ltr-badge">Slide 8 | Layer 1 (Bottom)</span>
+                                <span class="text-xs text-slate-400">طبقة الوصول للشبكة</span>
+                            </div>
+                            <h3 class="text-lg font-black text-white ltr-badge">4. Network Access Layer</h3>
+                            <ul class="space-y-2 text-xs text-slate-200 list-disc list-inside">
+                                <li class="ltr-badge text-right">Deals with physical addressing (MAC) <span class="text-slate-400 block pr-4">(تتعامل مع العنونة الفيزيائية MAC)</span></li>
+                                <li class="ltr-badge text-right">Defines how data is physically sent (Ethernet, Wi-Fi) <span class="text-slate-400 block pr-4">(تحدد كيف تُرسل البيانات فيزيائياً عبر Ethernet أو Wi-Fi)</span></li>
+                                <li class="ltr-badge text-right font-bold text-rose-300">Equivalent to OSI Data Link + Physical <span class="text-slate-300 font-normal block pr-4">(تعادل طبقتي ربط البيانات Data Link + الفيزيائية Physical في OSI)</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =====================================================================
+                 SECTION 6: NETWORKING TOOLS & ACTIVITY TIME (Slides 9, 10, 11, 12, 13)
+                 ===================================================================== -->
+            <section id="sec-tools" class="unit-section hidden space-y-6">
+                <!-- Slide 9: Activity Time Interactive Challenge -->
+                <div class="glass-panel rounded-2xl p-6 border border-amber-500/30">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-puzzle-piece"></i>
+                            </span>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h2 class="text-xl font-black text-white">نشاط تفاعلي (<span class="ltr-badge text-amber-400">Activity Time</span>)</h2>
+                                    <span class="px-2 py-0.5 rounded text-xs font-mono bg-slate-800 text-amber-300 border border-slate-700 ltr-badge">Slide 9</span>
+                                </div>
+                                <p class="text-xs text-slate-400">الشريحة 9 في الملف الأصلي مخصصة لنشاط عملي؛ قمنا بتحويلها إلى تحدي تصنيف مباشر للعناصر من الشرائح 5–8</p>
+                            </div>
+                        </div>
+                        <button onclick="resetActivityGame()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-cyan-300 border border-slate-700 transition">
+                            <i class="fa-solid fa-rotate ml-1"></i> إعادة النشاط
+                        </button>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-4">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-slate-300">اختر الطبقة الصحيحة في نموذج <span class="ltr-badge">OSI</span> للعنصر المعروض:</span>
+                            <span id="activityScoreBadge" class="font-bold text-amber-400 ltr-badge">النقاط: 0 / 7</span>
+                        </div>
+
+                        <div id="activityPromptBox" class="p-4 rounded-xl bg-slate-950 border border-amber-500/30 text-center space-y-1">
+                            <!-- Populated via JS -->
+                        </div>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2" id="activityLayerChoices">
+                            <!-- Populated via JS -->
+                        </div>
+
+                        <div id="activityFeedbackBox" class="hidden p-3 rounded-xl text-xs font-semibold text-center"></div>
+                    </div>
+                </div>
+
+                <!-- Slides 10 & 11: Why Use Networking Tools? -->
+                <div class="glass-panel rounded-2xl p-6">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="px-2.5 py-0.5 rounded text-xs font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 ltr-badge">Slides 10 &amp; 11</span>
+                                <span class="text-xs text-slate-400">أهمية استخدام أدوات الشبكات في التشخيص والاختبار</span>
+                            </div>
+                            <h2 class="text-2xl font-black text-white">لماذا نستخدم أدوات الشبكات؟ (<span class="ltr-badge text-cyan-400">Why Use Networking Tools?</span>)</h2>
+                        </div>
+                        <button onclick="toggleBookmark('slides1011-tools', 'أهداف أدوات الشبكات: Troubleshooting Networks & Testing Connectivity (Slides 10-11)')" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-amber-400 border border-slate-700 transition">
+                            <i class="fa-regular fa-bookmark ml-1"></i> حفظ في المفضلة
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <!-- Column 1: Troubleshooting Networks -->
+                        <div class="glass-card rounded-2xl p-6 border-t-4 border-t-rose-400 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="text-xs font-mono text-rose-400">عند فشل الشبكة (When networks fail)</span>
+                                    <h3 class="text-xl font-black text-white ltr-badge">1. Troubleshooting Networks</h3>
+                                </div>
+                                <div class="w-11 h-11 rounded-xl bg-rose-500/15 text-rose-400 flex items-center justify-center text-lg">
+                                    <i class="fa-solid fa-screwdriver-wrench"></i>
+                                </div>
+                            </div>
+                            <p class="text-xs text-slate-200 bg-slate-900/80 p-3 rounded-xl border border-slate-800 ltr-badge text-right">
+                                "When networks fail, tools help identify where problems occur and what's causing them."
+                                <span class="block text-slate-400 mt-1 font-sans">عندما تتعطل الشبكات، تساعد الأدوات في تحديد مكان حدوث المشكلات وما الذي يسببها:</span>
+                            </p>
+                            <div class="space-y-2.5 text-xs md:text-sm">
+                                <div class="p-3 rounded-xl bg-slate-900/70 border border-slate-800 flex items-center justify-between">
+                                    <span class="text-slate-200"><i class="fa-solid fa-location-crosshairs text-rose-400 ml-2"></i> تحديد موقع مشاكل الاتصال</span>
+                                    <span class="font-mono text-rose-300 ltr-badge">Locate connection issues</span>
+                                </div>
+                                <div class="p-3 rounded-xl bg-slate-900/70 border border-slate-800 flex items-center justify-between">
+                                    <span class="text-slate-200"><i class="fa-solid fa-gauge-simple-low text-rose-400 ml-2"></i> التعرف على أسباب بطء الأداء</span>
+                                    <span class="font-mono text-rose-300 ltr-badge">Identify slow performance</span>
+                                </div>
+                                <div class="p-3 rounded-xl bg-slate-900/70 border border-slate-800 flex items-center justify-between">
+                                    <span class="text-slate-200"><i class="fa-solid fa-file-circle-xmark text-rose-400 ml-2"></i> اكتشاف أخطاء الإعدادات والتهيئة</span>
+                                    <span class="font-mono text-rose-300 ltr-badge">Find configuration errors</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Column 2: Testing Connectivity -->
+                        <div class="glass-card rounded-2xl p-6 border-t-4 border-t-emerald-400 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="text-xs font-mono text-emerald-400">قبل حدوث المشاكل (Before problems occur)</span>
+                                    <h3 class="text-xl font-black text-white ltr-badge">2. Testing Connectivity</h3>
+                                </div>
+                                <div class="w-11 h-11 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center text-lg">
+                                    <i class="fa-solid fa-vial-circle-check"></i>
+                                </div>
+                            </div>
+                            <p class="text-xs text-slate-200 bg-slate-900/80 p-3 rounded-xl border border-slate-800 ltr-badge text-right">
+                                "Before problems occur, tools verify that networks are working properly and efficiently."
+                                <span class="block text-slate-400 mt-1 font-sans">قبل وقوع الأعطال، تتحقق الأدوات من أن الشبكات تعمل بشكل سليم وبكفاءة:</span>
+                            </p>
+                            <div class="space-y-2.5 text-xs md:text-sm">
+                                <div class="p-3 rounded-xl bg-slate-900/70 border border-slate-800 flex items-center justify-between">
+                                    <span class="text-slate-200"><i class="fa-solid fa-circle-check text-emerald-400 ml-2"></i> التحقق من عمل الاتصالات بنجاح</span>
+                                    <span class="font-mono text-emerald-300 ltr-badge">Verify connections work</span>
+                                </div>
+                                <div class="p-3 rounded-xl bg-slate-900/70 border border-slate-800 flex items-center justify-between">
+                                    <span class="text-slate-200"><i class="fa-solid fa-tachometer-alt text-emerald-400 ml-2"></i> قياس سرعة الشبكة</span>
+                                    <span class="font-mono text-emerald-300 ltr-badge">Measure network speed</span>
+                                </div>
+                                <div class="p-3 rounded-xl bg-slate-900/70 border border-slate-800 flex items-center justify-between">
+                                    <span class="text-slate-200"><i class="fa-solid fa-sliders text-emerald-400 ml-2"></i> فحص إعدادات الضبط والتهيئة</span>
+                                    <span class="font-mono text-emerald-300 ltr-badge">Check configuration settings</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Safe Simulated Diagnostic Terminal -->
+                    <div class="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="font-bold text-white text-sm"><i class="fa-solid fa-terminal text-cyan-400 ml-1"></i> محاكي طرفية تشخيص الشبكات (<span class="ltr-badge">Safe Network Diagnostic Simulator</span>)</h4>
+                                    <span class="text-[11px] px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">[محاكاة تطبيقية توضيحية]</span>
+                                </div>
+                                <p class="text-xs text-slate-400 mt-0.5">جرّب كيف تُحقق أدوات سطر الأوامر أهداف الشريحة 11 (فحص الاتصال، اكتشاف مكان العطل، ومراجعة الإعدادات)</p>
+                            </div>
+                            <button onclick="copyTerminalOutput()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 border border-slate-700 transition">
+                                <i class="fa-regular fa-copy ml-1"></i> نسخ المخرجات
+                            </button>
+                        </div>
+
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="runDiagnosticTool('ping')" class="px-3.5 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-xs font-mono transition ltr-badge">
+                                $ ping 8.8.8.8 (Verify Connections / ICMP)
+                            </button>
+                            <button onclick="runDiagnosticTool('tracert')" class="px-3.5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-mono transition ltr-badge">
+                                $ tracert ieee.org (Locate Connection Issues)
+                            </button>
+                            <button onclick="runDiagnosticTool('ipconfig')" class="px-3.5 py-2 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 text-xs font-mono transition ltr-badge">
+                                $ ipconfig /all (Check Configuration Settings)
+                            </button>
+                        </div>
+
+                        <pre id="terminalOutputBox" dir="ltr" class="p-4 rounded-xl bg-black/90 border border-slate-800 text-emerald-400 font-mono text-xs overflow-x-auto leading-relaxed">C:\IEEE_KSB_Week2&gt; Select a diagnostic command above to simulate network testing...</pre>
+                    </div>
+                </div>
+
+                <!-- Slides 12 & 13 Documentation Card -->
+                <div class="glass-panel rounded-2xl p-5 border border-slate-800 flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-300 flex items-center justify-center">
+                            <i class="fa-solid fa-flag-checkered"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h4 class="font-bold text-white text-sm">ختام العرض التقديمي (<span class="ltr-badge">Session wrap up &amp; Thank You</span>)</h4>
+                                <span class="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-800 text-indigo-300 ltr-badge">Slides 12 &amp; 13</span>
+                            </div>
+                            <p class="text-xs text-slate-400">الشريحتان 12 و13 تمثلان ختام الجلسة التدريبية (<span class="ltr-badge">Session wrap up</span>) وشريحة الشكر (<span class="ltr-badge">Thank You</span>). انتقل الآن إلى الملخص الذكي والاختبار الشامل للتحقق من إتقانك للجلسة!</p>
+                        </div>
+                    </div>
+                    <button onclick="switchSection('summary')" class="px-4 py-2 rounded-xl bg-gradient-to-l from-cyan-500 to-indigo-600 text-white text-xs font-bold hover:opacity-95 transition">
+                        الانتقال للملخص والمراجعة <i class="fa-solid fa-arrow-left mr-1"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- =====================================================================
+                 SECTION 7: SMART SUMMARY & CHEAT SHEET (Review Module)
+                 ===================================================================== -->
+            <section id="sec-summary" class="unit-section hidden space-y-6">
+                <!-- Smart Summary -->
+                <div class="glass-panel rounded-2xl p-6">
+                    <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
+                        <div>
+                            <h2 class="text-2xl font-black text-white flex items-center gap-2">
+                                <i class="fa-solid fa-wand-magic-sparkles text-cyan-400"></i>
+                                الملخص الذكي وورقة المراجعة السريعة (<span class="ltr-badge text-cyan-400">Smart Summary &amp; Cheat Sheet</span>)
+                            </h2>
+                            <p class="text-xs text-slate-400">خلاصة مركزة لجميع القوانين والمصطلحات والنقاط التي يسهل الخلط بينها في الاختبارات</p>
+                        </div>
+                    </div>
+
+                    <!-- Easy-to-Confuse Comparisons -->
+                    <h3 class="text-sm font-bold text-amber-300 mb-3 flex items-center gap-1.5">
+                        <i class="fa-solid fa-scale-balanced"></i> نقاط يسهل الخلط بينها (انتبه لها جيداً!):
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="glass-card rounded-xl p-4 border-r-4 border-r-cyan-400 space-y-1.5">
+                            <h4 class="font-bold text-white text-sm">الفرق بين <span class="ltr-badge text-cyan-300">Router</span> و <span class="ltr-badge text-indigo-300">Switch</span></h4>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                • <strong>Router:</strong> يعمل في الطبقة 3 (<span class="ltr-badge">Network</span>)، يستخدم عناوين <span class="ltr-badge">IP</span> المنطقية لتوجيه الـ <span class="ltr-badge">Packet</span>.<br>
+                                • <strong>Switch / Bridge:</strong> يعمل في الطبقة 2 (<span class="ltr-badge">Data Link</span>)، يستخدم عناوين <span class="ltr-badge">MAC</span> الفيزيائية لتمرير الـ <span class="ltr-badge">Frame</span>.<br>
+                                • <strong>Hub / NIC / Cable:</strong> في الطبقة 1 (<span class="ltr-badge">Physical</span>) وتنقل <span class="ltr-badge">Bits</span>.
+                            </p>
+                        </div>
+                        <div class="glass-card rounded-xl p-4 border-r-4 border-r-emerald-400 space-y-1.5">
+                            <h4 class="font-bold text-white text-sm">تطور اسم وحدة البيانات (<span class="ltr-badge text-emerald-300">PDU</span>)</h4>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                • الطبقات 7 و 6 و 5: <strong class="ltr-badge text-white">Data</strong><br>
+                                • الطبقة 4 (Transport): <strong class="ltr-badge text-amber-300">Segment</strong><br>
+                                • الطبقة 3 (Network): <strong class="ltr-badge text-emerald-300">Packet</strong><br>
+                                • الطبقة 2 (Data Link): <strong class="ltr-badge text-cyan-300">Frame</strong> (تُضاف هنا Header + Trailer)<br>
+                                • الطبقة 1 (Physical): <strong class="ltr-badge text-rose-300">Bits</strong>
+                            </p>
+                        </div>
+                        <div class="glass-card rounded-xl p-4 border-r-4 border-r-amber-400 space-y-1.5">
+                            <h4 class="font-bold text-white text-sm">دمج الطبقات في <span class="ltr-badge text-amber-300">TCP/IP</span></h4>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                • طبقة <strong>Application</strong> في TCP/IP = تدمج (Application + Presentation + Session) من OSI.<br>
+                                • طبقة <strong>Internet</strong> في TCP/IP = تقابل طبقة (Network) في OSI.<br>
+                                • طبقة <strong>Network Access</strong> في TCP/IP = تدمج (Data Link + Physical) من OSI.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Quick Mnemonic Box -->
+                    <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-cyan-300"><i class="fa-solid fa-lightbulb text-amber-400 ml-1"></i> جملة شهيرة لحفظ ترتيب طبقات OSI السبع من 1 إلى 7:</span>
+                            <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300">[توضيح إضافي خارج المصدر]</span>
+                        </div>
+                        <p class="text-xs md:text-sm font-mono text-white ltr-badge text-center py-1">
+                            <strong class="text-rose-400">P</strong>lease <strong class="text-cyan-400">D</strong>o <strong class="text-emerald-400">N</strong>ot <strong class="text-amber-400">T</strong>hrow <strong class="text-indigo-400">S</strong>ausage <strong class="text-purple-400">P</strong>izza <strong class="text-sky-400">A</strong>way
+                            <span class="block text-slate-400 text-xs mt-1">(Physical → Data Link → Network → Transport → Session → Presentation → Application)</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Saved Bookmarks Section -->
+                <div id="bookmarksContainer" class="glass-panel rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-bookmark text-amber-400"></i>
+                            عناصر المفضلة المحفوظة (<span class="ltr-badge">Saved Bookmarks</span>)
+                        </h3>
+                        <span class="text-xs text-slate-400">يتم حفظها تلقائياً في متصفحك</span>
+                    </div>
+                    <div id="bookmarksList" class="space-y-2 text-xs">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- =====================================================================
+                 SECTION 8: FLASHCARDS & COMPREHENSIVE QUIZ (Assessment Module)
+                 ===================================================================== -->
+            <section id="sec-quiz" class="unit-section hidden space-y-6">
+                <!-- Interactive Flashcards -->
+                <div class="glass-panel rounded-2xl p-6">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                        <div>
+                            <h2 class="text-xl font-black text-white flex items-center gap-2">
+                                <i class="fa-solid fa-clone text-cyan-400"></i>
+                                البطاقات التعليمية التفاعلية (<span class="ltr-badge text-cyan-400">Interactive Flashcards</span>)
+                            </h2>
+                            <p class="text-xs text-slate-400">انقر على البطاقة لقلبها ورؤية الإجابة، وميّز البطاقات الصعبة لمراجعتها لاحقاً</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="setFlashcardFilter('all')" id="fcFilterAll" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-cyan-500 text-slate-950 transition">الكل (12)</button>
+                            <button onclick="setFlashcardFilter('hard')" id="fcFilterHard" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-amber-300 border border-slate-700 transition">بطاقات صعبة للمراجعة (<span id="hardCountSpan">0</span>)</button>
+                        </div>
+                    </div>
+
+                    <!-- Flashcard Stage -->
+                    <div class="max-w-2xl mx-auto space-y-4">
+                        <div onclick="flipCurrentFlashcard()" class="perspective-1000 cursor-pointer h-56 w-full select-none">
+                            <div id="flashcardInner" class="transform-style-3d relative w-full h-full">
+                                <!-- Front -->
+                                <div class="backface-hidden absolute inset-0 glass-card rounded-2xl p-6 border-2 border-cyan-500/40 flex flex-col justify-between items-center text-center">
+                                    <div class="w-full flex items-center justify-between text-xs text-slate-400">
+                                        <span id="fcSlideTag" class="font-mono text-cyan-300 ltr-badge">Slide 5</span>
+                                        <span id="fcCounter" class="font-mono ltr-badge">1 / 12</span>
+                                    </div>
+                                    <h3 id="fcQuestionText" class="text-base md:text-lg font-extrabold text-white leading-relaxed px-2"></h3>
+                                    <span class="text-xs text-cyan-400"><i class="fa-solid fa-rotate ml-1"></i> انقر لقلب البطاقة وإظهار الإجابة</span>
+                                </div>
+                                <!-- Back -->
+                                <div class="backface-hidden rotate-y-180 absolute inset-0 glass-card rounded-2xl p-6 border-2 border-emerald-500/50 bg-slate-900/95 flex flex-col justify-between items-center text-center">
+                                    <span class="text-xs font-bold text-emerald-400">الإجابة النموذجية من المصدر</span>
+                                    <p id="fcAnswerText" class="text-sm md:text-base font-bold text-slate-100 leading-relaxed px-2"></p>
+                                    <span class="text-xs text-slate-400">انقر للعودة إلى وجه السؤال</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Flashcard Controls -->
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div class="flex items-center gap-2">
+                                <button onclick="navigateFlashcard(-1)" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white border border-slate-700 transition">
+                                    <i class="fa-solid fa-arrow-right ml-1"></i> السابقة
+                                </button>
+                                <button onclick="navigateFlashcard(1)" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white border border-slate-700 transition">
+                                    التالية <i class="fa-solid fa-arrow-left mr-1"></i>
+                                </button>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="toggleFlashcardHard()" id="fcMarkHardBtn" class="px-3.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold transition">
+                                    <i class="fa-solid fa-star ml-1"></i> تمييز كبطاقة صعبة
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comprehensive Interactive Quiz -->
+                <div class="glass-panel rounded-2xl p-6">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+                        <div>
+                            <h2 class="text-2xl font-black text-white flex items-center gap-2">
+                                <i class="fa-solid fa-graduation-cap text-indigo-400"></i>
+                                الاختبار التقييمي الشامل (<span class="ltr-badge text-indigo-400">Comprehensive Interactive Quiz</span>)
+                            </h2>
+                            <p class="text-xs text-slate-400">12 سؤالاً متدرج الصعوبة (اختيار من متعدد، صح وخطأ، وسيناريوهات عملية) تغطي جميع شرائح العرض</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span id="bestQuizScoreBadge" class="text-xs px-3 py-1.5 rounded-xl bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 font-bold">أعلى نتيجة سابقة: لم يُختبر بعد</span>
+                            <button onclick="resetQuiz()" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-cyan-300 border border-slate-700 transition">
+                                <i class="fa-solid fa-rotate-right ml-1"></i> إعادة الاختبار
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quiz Questions Container -->
+                    <div id="quizQuestionsContainer" class="space-y-5">
+                        <!-- Populated via JS -->
+                    </div>
+
+                    <!-- Final Score & Analytics Box -->
+                    <div id="quizResultsPanel" class="hidden mt-6 p-6 rounded-2xl bg-gradient-to-br from-slate-900 to-indigo-950/60 border border-indigo-500/40 space-y-4">
+                        <!-- Populated via JS when all questions answered or submitted -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- BOTTOM NAVIGATION BAR BETWEEN LESSONS -->
+            <div class="glass-panel rounded-2xl p-4 flex items-center justify-between">
+                <button id="prevUnitBtn" onclick="navigateUnit(-1)" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs md:text-sm font-bold text-slate-200 border border-slate-700 transition flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-right"></i>
+                    <span>الوحدة السابقة</span>
+                </button>
+
+                <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-cyan-500/20 text-cyan-400 border border-slate-700 transition text-xs flex items-center gap-1.5">
+                    <i class="fa-solid fa-arrow-up"></i>
+                    <span class="hidden sm:inline">أعلى الصفحة</span>
+                </button>
+
+                <button id="nextUnitBtn" onclick="navigateUnit(1)" class="px-4 py-2.5 rounded-xl bg-gradient-to-l from-cyan-500 to-indigo-600 hover:opacity-95 text-xs md:text-sm font-bold text-white transition flex items-center gap-2 shadow-lg shadow-cyan-500/20">
+                    <span>الوحدة التالية</span>
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- ==================== RESET PROGRESS CONFIRMATION MODAL ==================== -->
+    <div id="resetModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="glass-panel max-w-md w-full rounded-2xl p-6 border border-rose-500/40 space-y-4 text-center">
+            <div class="w-14 h-14 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto text-2xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="text-lg font-black text-white">تأكيد إعادة ضبط التقدم</h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+                هل أنت متأكد من رغبتك في حذف جميع بيانات التقدم المحفوظة محلياً (<span class="ltr-badge">LocalStorage</span>)؟ سيتم تصفير الوحدات المكتملة، نتائج الاختبارات، والبطاقات المميزة.
+            </p>
+            <div class="flex items-center justify-center gap-3 pt-2">
+                <button onclick="closeResetModal()" class="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200">إلغاء</button>
+                <button onclick="confirmResetProgress()" class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white">نعم، احذف وأعد الضبط</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== TOAST NOTIFICATION ==================== -->
+    <div id="toastNotification" class="fixed bottom-5 left-5 z-50 hidden px-4 py-3 rounded-xl glass-panel border border-cyan-500/40 text-xs font-bold text-white shadow-2xl items-center gap-2">
+        <i class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toastMessage">تم الحفظ بنجاح</span>
+    </div>
+
+    <!-- ==================== APPLICATION JAVASCRIPT ==================== -->
+    <script>
+        /* ============================================================================
+           1. SOURCE DATA REPOSITORY (100% Verbatim from "Week 2 __ OSI & TCPIP Models.pptx")
+           ============================================================================ */
+        const UNITS = [
+            { id: 'dashboard', title: '1. لوحة التحكم والأهداف', subtitle: 'Slides 1–3 & Coverage Map', icon: 'fa-gauge-high' },
+            { id: 'osi', title: '2. نموذج OSI التفاعلي', subtitle: 'Slide 5 (7 Layers Table)', icon: 'fa-layer-group' },
+            { id: 'encapsulation', title: '3. محاكي تغليف البيانات', subtitle: 'Slide 6 (Encapsulation & PDU)', icon: 'fa-boxes-packing' },
+            { id: 'tcpudp', title: '4. مقارنة TCP ضد UDP', subtitle: 'Slide 4 (Transport Lab)', icon: 'fa-code-compare' },
+            { id: 'tcpip', title: '5. نموذج TCP/IP والمقارنة', subtitle: 'Slides 7–8 (4 Layers)', icon: 'fa-sitemap' },
+            { id: 'tools', title: '6. أدوات الشبكات والنشاط', subtitle: 'Slides 9–13 (Tools & Activity)', icon: 'fa-screwdriver-wrench' },
+            { id: 'summary', title: '7. الملخص الذكي والمفضلة', subtitle: 'Smart Summary & Cheat Sheet', icon: 'fa-wand-magic-sparkles' },
+            { id: 'quiz', title: '8. البطاقات والاختبار الشامل', subtitle: 'Flashcards & 12-Question Quiz', icon: 'fa-graduation-cap' }
+        ];
+
+        // Exact 7 Layers Data from Slide 5 Table
+        const OSI_LAYERS_DATA = [
+            {
+                num: 7,
+                layer: '7- Application',
+                arName: 'طبقة التطبيقات',
+                notes: 'Closest to the user – applications and services',
+                arNotes: 'الأقرب إلى المستخدم النهائي – توفر واجهة للتطبيقات والخدمات الشبكية.',
+                encapsulation: 'Data',
+                device: '-',
+                protocol: 'HTTP, FTP, SMTP, DNS',
+                tcpipEquivalent: 'Application Layer',
+                color: 'cyan'
+            },
+            {
+                num: 6,
+                layer: '6- Presentation',
+                arName: 'طبقة العرض (التقديم)',
+                notes: 'Data formatting (encryption, compression, translation)',
+                arNotes: 'تنسيق البيانات وتجهيزها (التشفير Encryption، الضغط Compression، والترجمة Translation).',
+                encapsulation: 'Data',
+                device: '-',
+                protocol: 'AVI-MP4-PDF-Docx',
+                tcpipEquivalent: 'Application Layer',
+                color: 'sky'
+            },
+            {
+                num: 5,
+                layer: '5- Session',
+                arName: 'طبقة الجلسة',
+                notes: 'Manages sessions (establish, maintain, terminate)',
+                arNotes: 'إدارة الجلسات الحوارية بين الأجهزة (إنشاء الجلسة Establish، الحفاظ عليها Maintain، وإنهاؤها Terminate).',
+                encapsulation: 'Data',
+                device: '-',
+                protocol: 'SQL-NFS',
+                tcpipEquivalent: 'Application Layer',
+                color: 'indigo'
+            },
+            {
+                num: 4,
+                layer: '4- Transport',
+                arName: 'طبقة النقل',
+                notes: 'Responsible for delivery – reliable (TCP) or unreliable (UDP)',
+                arNotes: 'مسؤولة عن تسليم البيانات – إما تسليم موثوق (TCP) أو غير موثوق وسريع (UDP).',
+                encapsulation: 'Segment',
+                device: '-',
+                protocol: 'TCP - UDP',
+                tcpipEquivalent: 'Transport Layer',
+                color: 'amber'
+            },
+            {
+                num: 3,
+                layer: '3- Network',
+                arName: 'طبقة الشبكة',
+                notes: 'Logical addressing & routing',
+                arNotes: 'العنونة المنطقية (Logical Addressing) وتوجيه الحزم (Routing) عبر الشبكات المختلفة.',
+                encapsulation: 'Packet',
+                device: 'Router',
+                protocol: 'IP - ICMP',
+                tcpipEquivalent: 'Internet Layer',
+                color: 'emerald'
+            },
+            {
+                num: 2,
+                layer: '2- Data Link',
+                arName: 'طبقة ربط البيانات',
+                notes: 'MAC addressing + error detection',
+                arNotes: 'العنونة الفيزيائية (MAC Addressing) بالإضافة إلى اكتشاف الأخطاء (Error Detection).',
+                encapsulation: 'Frame',
+                device: 'Switch, Bridge',
+                protocol: 'ARP, 802.3 (Wired), 802.11 (Wireless)',
+                tcpipEquivalent: 'Network Access Layer',
+                color: 'teal'
+            },
+            {
+                num: 1,
+                layer: '1- Physical',
+                arName: 'الطبقة الفيزيائية (المادية)',
+                notes: 'Transmits raw bits over the medium',
+                arNotes: 'نقل البتات الخام (Raw Bits 0 & 1) كإشارات كهربائية أو ضوئية أو لاسلكية عبر وسط النقل.',
+                encapsulation: 'Bits',
+                device: 'Hub, Cable, NIC',
+                protocol: 'RJ - Cables',
+                tcpipEquivalent: 'Network Access Layer',
+                color: 'rose'
+            }
+        ];
+
+        // Encapsulation Steps Data (Slide 6)
+        const ENCAP_STEPS = [
+            {
+                step: 0,
+                title: 'الطبقات العليا (7- Application, 6- Presentation, 5- Session)',
+                sourceText: 'Application / Presentation / Session Layers generate user Data.',
+                arDesc: 'تبدأ البيانات من تطبيق المستخدم (مثل متصفح الويب) وتكون في صورتها الأولية وتسمى وحدة البيانات هنا Data.',
+                pdu: 'Data',
+                badges: ['[Data Payload]'],
+                borderColor: 'border-cyan-500/50'
+            },
+            {
+                step: 1,
+                title: 'طبقة النقل (4- Transport Layer - Slide 6)',
+                sourceText: 'Transport Layer: Data is segmented, TCP/UDP headers are added.',
+                arDesc: 'يتم تقسيم البيانات إلى أجزاء وإضافة ترويسة طبقة النقل (TCP/UDP Header) لتتحول إلى Segment.',
+                pdu: 'Segment',
+                badges: ['[TCP/UDP Header]', '[Data Payload]'],
+                borderColor: 'border-amber-500/50'
+            },
+            {
+                step: 2,
+                title: 'طبقة الشبكة (3- Network Layer - Slide 6)',
+                sourceText: 'Network Layer: IP header is added → forms a packet.',
+                arDesc: 'تُضاف ترويسة IP Header المحتوية على العنوان المنطقي للمصدر والوجهة، فتتشكل الحزمة Packet.',
+                pdu: 'Packet',
+                badges: ['[IP Header]', '[TCP/UDP Header]', '[Data Payload]'],
+                borderColor: 'border-emerald-500/50'
+            },
+            {
+                step: 3,
+                title: 'طبقة ربط البيانات (2- Data Link Layer - Slide 6)',
+                sourceText: 'Data Link Layer: MAC addresses + Frame header/trailer are added.',
+                arDesc: 'تُضاف عناوين MAC الفيزيائية في ترويسة الإطار (Frame Header) مع ذيل الإطار (Frame Trailer) لفحص الأخطاء، فيتكون الإطار Frame.',
+                pdu: 'Frame',
+                badges: ['[MAC + Frame Header]', '[IP Header]', '[TCP/UDP Header]', '[Data Payload]', '[Frame Trailer]'],
+                borderColor: 'border-teal-500/50'
+            },
+            {
+                step: 4,
+                title: 'الطبقة الفيزيائية (1- Physical Layer - Slide 6)',
+                sourceText: 'Physical Layer: Data is converted into bits and transmitted over the medium.',
+                arDesc: 'يتم تحويل الإطار بالكامل إلى سلسلة من البتات الخام (01011010...) وإرسالها عبر الكابلات (RJ-Cables) أو اللاسلكي.',
+                pdu: 'Bits',
+                badges: ['01010110', '11001010', '00110101', '10101111'],
+                borderColor: 'border-rose-500/50'
+            }
+        ];
+
+        // TCP/IP 4 Layers Data (Slides 7 & 8)
+        const TCPIP_LAYERS_DATA = [
+            {
+                id: 'app',
+                name: '1. Application Layer',
+                arName: 'طبقة التطبيقات',
+                slide: 'Slide 7',
+                bullets: [
+                    'Provides network services to end-users',
+                    'Includes HTTP, FTP, SMTP, DNS',
+                    'Equivalent to OSI Application + Presentation + Session'
+                ],
+                arExplanation: 'تدمج وظائف الطبقات الثلاث العليا في نموذج OSI (التطبيقات 7 + العرض 6 + الجلسة 5) وتتعامل مباشرة مع البروتوكولات التي يستخدمها المستخدم النهائي.',
+                osiNums: [7, 6, 5],
+                osiNames: ['7- Application', '6- Presentation', '5- Session'],
+                protocols: 'HTTP, FTP, SMTP, DNS, AVI-MP4-PDF-Docx, SQL-NFS',
+                pdu: 'Data',
+                color: 'cyan'
+            },
+            {
+                id: 'trans',
+                name: '2. Transport Layer',
+                arName: 'طبقة النقل',
+                slide: 'Slide 7',
+                bullets: [
+                    'Ensures reliable delivery (TCP) or fast delivery (UDP)',
+                    'Responsible for segmentation and error control',
+                    'Example: TCP (web browsing), UDP (video streaming, gaming)'
+                ],
+                arExplanation: 'تقابل طبقة النقل (Layer 4 - Transport) في نموذج OSI، وهي المسؤولة عن تقسيم البيانات (Segmentation) والتحكم في الأخطاء واختيار TCP أو UDP.',
+                osiNums: [4],
+                osiNames: ['4- Transport'],
+                protocols: 'TCP, UDP',
+                pdu: 'Segment',
+                color: 'amber'
+            },
+            {
+                id: 'inet',
+                name: '3. Internet Layer',
+                arName: 'طبقة الإنترنت',
+                slide: 'Slide 8',
+                bullets: [
+                    'Handles logical addressing using IP addresses.',
+                    'Responsible for routing packets across networks.',
+                    'Ensures packet delivery from source to destination.',
+                    'Uses protocols like IP, ICMP.'
+                ],
+                arExplanation: 'تقابل طبقة الشبكة (Layer 3 - Network) في نموذج OSI، وتستخدم بروتوكولات IP و ICMP للعنونة المنطقية وتوجيه الحزم (Packets) عبر الموجهات (Routers).',
+                osiNums: [3],
+                osiNames: ['3- Network'],
+                protocols: 'IP, ICMP',
+                pdu: 'Packet (Device: Router)',
+                color: 'emerald'
+            },
+            {
+                id: 'netacc',
+                name: '4. Network Access Layer',
+                arName: 'طبقة الوصول إلى الشبكة',
+                slide: 'Slide 8',
+                bullets: [
+                    'Deals with physical addressing (MAC)',
+                    'Defines how data is physically sent (Ethernet, Wi-Fi)',
+                    'Equivalent to OSI Data Link + Physical'
+                ],
+                arExplanation: 'تدمج طبقتي ربط البيانات (2- Data Link) والفيزيائية (1- Physical) من نموذج OSI، فتجمع بين عنونة MAC وإرسال البيانات فيزيائياً عبر Ethernet (802.3) و Wi-Fi (802.11).',
+                osiNums: [2, 1],
+                osiNames: ['2- Data Link', '1- Physical'],
+                protocols: 'Ethernet (802.3), Wi-Fi (802.11), ARP, RJ-Cables',
+                pdu: 'Frame / Bits (Switch, Bridge, Hub, NIC)',
+                color: 'rose'
+            }
+        ];
+
+        // Application Scenarios for TCP vs UDP (Slide 4)
+        const APP_SCENARIOS = [
+            { name: 'Web Browsing', ar: 'تصفح الويب (HTTP)', proto: 'TCP', icon: 'fa-globe', reason: 'ذكرت الشريحة 4و7 صراحة أن Web browsing يستخدم TCP لأن الدقة وعدم ضياع أجزاء من صفحة الويب أمر ضروري.' },
+            { name: 'Video Streaming', ar: 'بث الفيديو المباشر', proto: 'UDP', icon: 'fa-film', reason: 'ذكرت الشريحة 4و7 أن Video streaming يستخدم UDP لأن السرعة والتدفق الفوري أهم من إعادة إرسال إطار مفقود.' },
+            { name: 'Email (SMTP)', ar: 'البريد الإلكتروني', proto: 'TCP', icon: 'fa-envelope', reason: 'ذكرت الشريحة 4 أن البريد الإلكتروني (Email) يستخدم TCP لضمان وصول الرسالة كاملة دون نقص.' },
+            { name: 'Online Gaming', ar: 'الألعاب الأونلاين', proto: 'UDP', icon: 'fa-gamepad', reason: 'ذكرت الشريحة 4و7 أن Online gaming يستخدم UDP لتقليل التأخير (Low Overhead) وتحقيق استجابة لحظية.' },
+            { name: 'File Transfer (FTP)', ar: 'نقل الملفات', proto: 'TCP', icon: 'fa-file-arrow-down', reason: 'ذكرت الشريحة 4 أن File transfer يتطلب TCP لأن تلف بايت واحد قد يفسد الملف بالكامل.' },
+            { name: 'VoIP Calls', ar: 'مكالمات الصوت عبر الإنترنت', proto: 'UDP', icon: 'fa-phone-volume', reason: 'ذكرت الشريحة 4 أن VoIP من تطبيقات الوقت الحقيقي (Real-time) التي تعتمد على UDP لسرعة نقل الصوت.' }
+        ];
+
+        // Activity Time Items (Slide 9 Challenge)
+        const ACTIVITY_ITEMS = [
+            { item: 'Router & IP / ICMP Protocols', hint: 'جهاز وبروتوكولات العنونة المنطقية والتوجيه (Logical addressing & routing)', correctLayer: 3 },
+            { item: 'Switch, Bridge & ARP / 802.3 / 802.11', hint: 'أجهزة وبروتوكولات عنونة MAC واكتشاف الأخطاء (Frame)', correctLayer: 2 },
+            { item: 'HTTP, FTP, SMTP, DNS', hint: 'بروتوكولات الطبقة الأقرب للمستخدم (Closest to the user)', correctLayer: 7 },
+            { item: 'AVI - MP4 - PDF - Docx', hint: 'تنسيق البيانات والتشفير والضغط (Encryption, compression, translation)', correctLayer: 6 },
+            { item: 'SQL - NFS', hint: 'إدارة الجلسات: إنشاؤها والحفاظ عليها وإنهاؤها (Manages sessions)', correctLayer: 5 },
+            { item: 'Segment (TCP - UDP)', hint: 'وحدة البيانات وبروتوكولات التسليم الموثوق أو غير الموثوق', correctLayer: 4 },
+            { item: 'Hub, Cable, NIC & Raw Bits', hint: 'نقل البتات الخام عبر الوسط المادي (RJ - Cables)', correctLayer: 1 }
+        ];
+
+        // 12 Flashcards covering all slides
+        const FLASHCARDS_DATA = [
+            { id: 'fc1', slide: 'Slide 4', q: 'ما الفرق الأساسي بين TCP و UDP من حيث إعداد الاتصال والموثوقية؟', a: 'TCP اتصالي التوجه (Connection-oriented) وموثوق (Reliable - يعيد إرسال المفقود)، بينما UDP غير اتصالي (Connectionless) وغير موثوق (Unreliable - لا يعيد الإرسال) لكنه أسرع وأخف.' },
+            { id: 'fc2', slide: 'Slide 4', q: 'اذكر 3 أمثلة لتطبيقات تستخدم TCP و3 تطبيقات تستخدم UDP كما ورد في الشريحة 4.', a: 'تطبيقات TCP: تصفح الويب (Web browsing)، البريد الإلكتروني (Email)، نقل الملفات (File transfer). تطبيقات UDP: بث الفيديو (Video streaming)، الألعاب (Online gaming)، ومكالمات VoIP.' },
+            { id: 'fc3', slide: 'Slide 5', q: 'ما هي وظيفة طبقة العرض (6- Presentation Layer) وما أمثلة صيغها في جدول OSI؟', a: 'وظيفتها تنسيق البيانات: التشفير (Encryption)، الضغط (Compression)، والترجمة (Translation). أمثلتها في الجدول: AVI, MP4, PDF, Docx.' },
+            { id: 'fc4', slide: 'Slide 5', q: 'ما هي وظيفة طبقة الجلسة (5- Session Layer) وما البروتوكولات المذكورة لها؟', a: 'تدير الجلسات (Manages sessions: establish, maintain, terminate). البروتوكولات المذكورة في الجدول: SQL و NFS.' },
+            { id: 'fc5', slide: 'Slide 5', q: 'ما الأجهزة والبروتوكولات التي تعمل في طبقة ربط البيانات (2- Data Link Layer)؟', a: 'الأجهزة: Switch و Bridge. البروتوكولات والمعايير: ARP، و 802.3 (Wired للشبكات السلكية)، و 802.11 (Wireless للشبكات اللاسلكية). ووحدة البيانات هي Frame.' },
+            { id: 'fc6', slide: 'Slide 5', q: 'ما الأجهزة التي تعمل في الطبقة الفيزيائية (1- Physical Layer) وما وحدة بياناتها؟', a: 'الأجهزة: Hub, Cable, NIC (بطاقة الشبكة) مع كابلات RJ - Cables. ووحدة البيانات هي البتات الخام (Bits).' },
+            { id: 'fc7', slide: 'Slide 6', q: 'لخص خطوات تغليف البيانات (Data Encapsulation) الأربع في نموذج OSI.', a: '1) Transport: تقسيم البيانات وإضافة ترويسة TCP/UDP لتكوين Segment. 2) Network: إضافة ترويسة IP لتكوين Packet. 3) Data Link: إضافة عناوين MAC وترويسة وذيل الإطار لتكوين Frame. 4) Physical: تحويلها إلى Bits.' },
+            { id: 'fc8', slide: 'Slide 7', q: 'ما هي الطبقات التي تعادلها طبقة التطبيقات (Application Layer) في نموذج TCP/IP؟', a: 'تعادل 3 طبقات مجتمعة في نموذج OSI وهي: Application (7) + Presentation (6) + Session (5).' },
+            { id: 'fc9', slide: 'Slide 8', q: 'ما هي وظيفة طبقة الإنترنت (Internet Layer) في نموذج TCP/IP وما بروتوكولاتها؟', a: 'تتعامل مع العنونة المنطقية (IP addresses)، وتوجيه الحزم (Routing packets) عبر الشبكات من المصدر للوجهة، وتستخدم بروتوكولات مثل IP و ICMP.' },
+            { id: 'fc10', slide: 'Slide 8', q: 'ماذا تعادل طبقة الوصول للشبكة (Network Access Layer) في نموذج OSI؟', a: 'تعادل طبقتي Data Link (2) + Physical (1) في نموذج OSI، وتتعامل مع عنونة MAC والإرسال الفيزيائي عبر Ethernet و Wi-Fi.' },
+            { id: 'fc11', slide: 'Slide 11', q: 'ما الفرق بين Troubleshooting Networks و Testing Connectivity في أدوات الشبكات؟', a: 'Troubleshooting يحدث "عند فشل الشبكة" لتحديد مكان المشكلة، بطء الأداء، وأخطاء الإعداد. أما Testing Connectivity فيحدث "قبل وقوع المشاكل" للتحقق من عمل الاتصال، قياس السرعة، وفحص الإعدادات.' },
+            { id: 'fc12', slide: 'Slide 5 & 8', q: 'في أي طبقة يعمل جهاز الموجه (Router) وما وحدة البيانات التي يوجهها؟', a: 'يعمل الـ Router في الطبقة الثالثة (3- Network Layer في OSI أو Internet Layer في TCP/IP) ويوجه الحزم المسماة Packet.' }
+        ];
+
+        // 12 Comprehensive Quiz Questions
+        const QUIZ_QUESTIONS = [
+            {
+                id: 1,
+                topic: 'TCP vs UDP (Slide 4)',
+                type: 'اختيار من متعدد',
+                q: 'أي من الخصائص التالية تنطبق بشكل صحيح على بروتوكول UDP وفقاً للشريحة 4؟',
+                options: [
+                    'يتطلب إنشاء اتصال قبل نقل البيانات (Connection-oriented) ويعيد إرسال المفقود',
+                    'غير اتصالي (Connectionless)، خفيف الوزن (Lightweight)، ولا يحتوي على تحكم بالتدفق (No flow control)',
+                    'يضمن وصول البيانات بنسبة 100% ويُستخدم في نقل الملفات والبريد الإلكتروني',
+                    'أبطأ من TCP بسبب حجم الترويسات الكبير'
+                ],
+                correct: 1,
+                explanation: 'بروتوكول UDP غير اتصالي (Connectionless)، خفيف وسريع (Lightweight)، لا يوفر Flow control، ويُستخدم في تطبيقات الوقت الحقيقي مثل الألعاب وبث الفيديو.'
+            },
+            {
+                id: 2,
+                topic: 'نموذج OSI (Slide 5)',
+                type: 'اختيار من متعدد',
+                q: 'في أي طبقة من نموذج OSI تتم عملية التشفير والضغط وترجمة تنسيق البيانات (Encryption, compression, translation)؟',
+                options: [
+                    '7- Application Layer',
+                    '6- Presentation Layer',
+                    '5- Session Layer',
+                    '4- Transport Layer'
+                ],
+                correct: 1,
+                explanation: 'طبقة العرض (6- Presentation Layer) هي المسؤولة عن Data formatting (encryption, compression, translation) ومن أمثلتها AVI-MP4-PDF-Docx.'
+            },
+            {
+                id: 3,
+                topic: 'نموذج OSI (Slide 5)',
+                type: 'اختيار من متعدد',
+                q: 'ما هي وحدة البيانات (Encapsulation PDU) والأجهزة المرتبطة بطبقة ربط البيانات (2- Data Link Layer)؟',
+                options: [
+                    'Packet — Router',
+                    'Segment — Hub',
+                    'Frame — Switch, Bridge',
+                    'Bits — NIC, Cable'
+                ],
+                correct: 2,
+                explanation: 'في الطبقة الثانية (2- Data Link Layer) تسمى وحدة البيانات Frame، وتعمل فيها أجهزة Switch و Bridge مع بروتوكولات ARP و 802.3 و 802.11.'
+            },
+            {
+                id: 4,
+                topic: 'تغليف البيانات (Slide 6)',
+                type: 'سؤال تحليلي',
+                q: 'أثناء عملية تغليف البيانات (Data Encapsulation)، في أي طبقة يتم إضافة كل من الترويسة والذيل معاً (Header AND Trailer)؟',
+                options: [
+                    'Transport Layer',
+                    'Network Layer',
+                    'Data Link Layer',
+                    'Physical Layer'
+                ],
+                correct: 2,
+                explanation: 'نصت الشريحة 6 صراحة على أن: "Data Link Layer: MAC addresses + Frame header/trailer are added" لتكوين الإطار وفحص الأخطاء.'
+            },
+            {
+                id: 5,
+                topic: 'تغليف البيانات (Slide 6)',
+                type: 'اختيار من متعدد',
+                q: 'ماذا يحدث للبيانات في طبقة الشبكة (Network Layer) أثناء عملية التغليف حسب الشريحة 6؟',
+                options: [
+                    'يتم تقسيم البيانات وإضافة ترويسة TCP/UDP',
+                    'تُضاف ترويسة IP فتتكون الحزمة (IP header is added → forms a packet)',
+                    'تتحول البيانات إلى بتات خام (Bits)',
+                    'تُضاف عناوين MAC الفيزيائية'
+                ],
+                correct: 1,
+                explanation: 'في طبقة الشبكة (Network Layer) تُضاف ترويسة IP Header إلى الـ Segment فتتحول إلى Packet.'
+            },
+            {
+                id: 6,
+                topic: 'نموذج TCP/IP (Slide 7)',
+                type: 'اختيار من متعدد',
+                q: 'طبقة التطبيقات (Application Layer) في نموذج TCP/IP تعادل أي طبقات في نموذج OSI؟',
+                options: [
+                    'Application + Transport',
+                    'Application + Presentation + Session',
+                    'Session + Transport + Network',
+                    'Data Link + Physical'
+                ],
+                correct: 1,
+                explanation: 'في الشريحة 7: طبقة Application Layer في TCP/IP تعادل الطبقات العليا الثلاث في OSI: Application + Presentation + Session.'
+            },
+            {
+                id: 7,
+                topic: 'نموذج TCP/IP (Slide 8)',
+                type: 'صح أم خطأ',
+                q: 'صح أم خطأ: طبقة الوصول إلى الشبكة (Network Access Layer) في نموذج TCP/IP تعادل طبقتي Data Link + Physical في نموذج OSI وتتعامل مع عناوين MAC وتقنيات Ethernet و Wi-Fi.',
+                options: [
+                    'عبارة صحيحة',
+                    'عبارة خاطئة'
+                ],
+                correct: 0,
+                explanation: 'عبارة صحيحة 100% ومطابقة لنص الشريحة 8 (Deals with physical addressing MAC, Defines how data is physically sent Ethernet/Wi-Fi, Equivalent to OSI Data Link + Physical).'
+            },
+            {
+                id: 8,
+                topic: 'نموذج OSI (Slide 5)',
+                type: 'اختيار من متعدد',
+                q: 'أي من البروتوكولات التالية ذُكرت في الشريحة 5 ضمن طبقة الجلسة (5- Session Layer)؟',
+                options: [
+                    'HTTP, FTP, SMTP, DNS',
+                    'IP - ICMP',
+                    'SQL - NFS',
+                    'ARP, 802.3, 802.11'
+                ],
+                correct: 2,
+                explanation: 'جدول الشريحة 5 يربط الطبقة الخامسة (5- Session) بـ SQL-NFS.'
+            },
+            {
+                id: 9,
+                topic: 'تطبيق عملي (Slide 4 & 7)',
+                type: 'سيناريو تطبيقي',
+                q: 'يقوم مهندس شبكات بتصميم تطبيق مكالمات صوتية فورية (VoIP) وبث فيديو حي حيث تكون السرعة اللحظية أهم من إعادة إرسال الحزم المفقودة. أي بروتوكول يجب أن يختار؟',
+                options: [
+                    'TCP لأنه يضمن عدم ضياع أي بايت',
+                    'UDP لأنه خفيف وسريع ومصمم لتطبيقات الوقت الحقيقي (Real-time)',
+                    'ICMP لأنه مسؤول عن توجيه الصوت',
+                    'ARP لأنه يضغط ملفات الصوت'
+                ],
+                correct: 1,
+                explanation: 'وفقاً للشريحة 4، يُستخدم UDP في تطبيقات الوقت الحقيقي حيث السرعة هي الأهم (Video streaming, Online gaming, VoIP).'
+            },
+            {
+                id: 10,
+                topic: 'أدوات الشبكات (Slides 10 & 11)',
+                type: 'اختيار من متعدد',
+                q: 'أي من المهام التالية تندرج تحت "Testing Connectivity" (قبل حدوث المشاكل) وليس تحت "Troubleshooting Networks" (بعد تعطل الشبكة) وفقاً للشريحة 11؟',
+                options: [
+                    'Locate connection issues (تحديد موقع مشاكل الاتصال)',
+                    'Find configuration errors (اكتشاف أخطاء الإعدادات بعد العطل)',
+                    'Verify connections work & Measure network speed (التحقق من عمل الاتصالات وقياس سرعة الشبكة)',
+                    'Identify slow performance (التعرف على أسباب بطء الأداء عند الفشل)'
+                ],
+                correct: 2,
+                explanation: 'في الشريحة 11، يشمل Testing Connectivity (قبل وقوع الأعطال): Verify connections work, Measure network speed, Check configuration settings.'
+            },
+            {
+                id: 11,
+                topic: 'نموذج OSI (Slide 5)',
+                type: 'اختيار من متعدد',
+                q: 'ما هو المعيار المذكور في الشريحة 5 للشبكات السلكية (Wired) والشبكات اللاسلكية (Wireless) في طبقة Data Link؟',
+                options: [
+                    '802.3 للسلكية (Wired) و 802.11 للاسلكية (Wireless)',
+                    '802.11 للسلكية و 802.3 للاسلكية',
+                    'RJ-45 للاسلكية و ICMP للسلكية',
+                    'SQL للسلكية و NFS للاسلكية'
+                ],
+                correct: 0,
+                explanation: 'في جدول الشريحة 5 عند طبقة Data Link: معيار 802.3 (Wired) للشبكات السلكية إيثرنت، ومعيار 802.11 (Wireless) لشبكات Wi-Fi.'
+            },
+            {
+                id: 12,
+                topic: 'مقارنة النماذج (Slides 5, 7, 8)',
+                type: 'سؤال شامل',
+                q: 'أي طبقة في نموذج TCP/IP مسؤولة عن توجيه الحزم (Routing packets) عبر الشبكات باستخدام بروتوكولَي IP و ICMP؟',
+                options: [
+                    'Application Layer',
+                    'Transport Layer',
+                    'Internet Layer',
+                    'Network Access Layer'
+                ],
+                correct: 2,
+                explanation: 'في الشريحة 8، طبقة Internet Layer في نموذج TCP/IP مسؤولة عن العنونة المنطقية وتوجيه الحزم عبر الشبكات باستخدام IP و ICMP.'
+            }
+        ];
+
+        /* ============================================================================
+           2. STATE MANAGEMENT & LOCALSTORAGE PERSISTENCE
+           ============================================================================ */
+        const STORAGE_KEY = 'ieee_ksb_week2_osi_tcpip_v1';
+
+        let appState = {
+            activeUnit: 'dashboard',
+            completedUnits: [],
+            bookmarks: [],
+            hardFlashcards: [],
+            quizAnswers: {},
+            bestQuizScore: null,
+            selectedOsiLayer: 7,
+            osiTableAscending: false,
+            encapStep: 0,
+            calcProto: 'TCP',
+            selectedTcpipId: 'app',
+            activityIndex: 0,
+            activityScore: 0,
+            fcIndex: 0,
+            fcFilter: 'all',
+            fcFlipped: false
+        };
+
+        function loadState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    appState = { ...appState, ...parsed };
+                }
+            } catch (e) {
+                console.warn('LocalStorage read failed:', e);
+            }
+        }
+
+        function saveState() {
+            try {
+                const toSave = {
+                    activeUnit: appState.activeUnit,
+                    completedUnits: appState.completedUnits,
+                    bookmarks: appState.bookmarks,
+                    hardFlashcards: appState.hardFlashcards,
+                    quizAnswers: appState.quizAnswers,
+                    bestQuizScore: appState.bestQuizScore
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+            } catch (e) {
+                console.warn('LocalStorage save failed:', e);
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toastNotification');
+            const text = document.getElementById('toastMessage');
+            text.textContent = msg;
+            toast.classList.remove('hidden');
+            toast.classList.add('flex');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+                toast.classList.remove('flex');
+            }, 2600);
+        }
+
+        /* ============================================================================
+           3. NAVIGATION & PROGRESS RENDERING
+           ============================================================================ */
+        function renderSidebarNav() {
+            const container = document.getElementById('navButtonsContainer');
+            container.innerHTML = UNITS.map(u => {
+                const isActive = appState.activeUnit === u.id;
+                const isDone = appState.completedUnits.includes(u.id);
+                return `
+                    <button onclick="switchSection('${u.id}')"
+                            class="w-full text-right p-3 rounded-xl transition flex items-center justify-between gap-2 border ${
+                                isActive
+                                ? 'bg-gradient-to-l from-cyan-500/20 to-indigo-500/20 border-cyan-400/50 text-white shadow-lg'
+                                : 'bg-slate-900/40 hover:bg-slate-800/70 border-transparent text-slate-300'
+                            }">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <span class="w-8 h-8 rounded-lg ${isActive ? 'bg-cyan-500 text-slate-950' : 'bg-slate-800 text-cyan-400'} flex items-center justify-center shrink-0 text-sm">
+                                <i class="fa-solid ${u.icon}"></i>
+                            </span>
+                            <div class="truncate">
+                                <div class="text-xs font-bold truncate">${u.title}</div>
+                                <div class="text-[10px] text-slate-400 font-mono truncate ltr-badge">${u.subtitle}</div>
+                            </div>
+                        </div>
+                        <span class="shrink-0">
+                            ${isDone
+                                ? '<i class="fa-solid fa-circle-check text-emerald-400 text-sm" title="مكتملة"></i>'
+                                : '<i class="fa-regular fa-circle text-slate-600 text-sm"></i>'}
+                        </span>
+                    </button>
+                `;
+            }).join('');
+
+            // Update overall progress
+            const pct = Math.round((appState.completedUnits.length / UNITS.length) * 100);
+            document.getElementById('overallProgressText').textContent = `${pct}%`;
+            document.getElementById('overallProgressBar').style.width = `${pct}%`;
+            document.getElementById('completedUnitsBadge').textContent = `${appState.completedUnits.length} / ${UNITS.length}`;
+
+            // Update Complete Button state
+            const completeBtn = document.getElementById('sidebarCompleteBtn');
+            const isCurrDone = appState.completedUnits.includes(appState.activeUnit);
+            if (isCurrDone) {
+                completeBtn.className = 'w-full py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 font-bold transition flex items-center justify-center gap-1.5';
+                completeBtn.innerHTML = '<i class="fa-solid fa-check-double"></i><span>تم إكمال هذه الوحدة (إلغاء؟)</span>';
+            } else {
+                completeBtn.className = 'w-full py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20';
+                completeBtn.innerHTML = '<i class="fa-solid fa-check-circle"></i><span>تحديد الوحدة كمكتملة</span>';
+            }
+        }
+
+        function switchSection(unitId) {
+            appState.activeUnit = unitId;
+            saveState();
+
+            document.querySelectorAll('.unit-section').forEach(sec => sec.classList.add('hidden'));
+            const target = document.getElementById(`sec-${unitId}`);
+            if (target) target.classList.remove('hidden');
+
+            renderSidebarNav();
+            updateBottomNavButtons();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Close mobile sidebar if open
+            const sidebar = document.getElementById('sidebarNav');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            if (!sidebar.classList.contains('translate-x-full')) {
+                sidebar.classList.add('translate-x-full');
+                backdrop.classList.add('hidden');
+            }
+        }
+
+        function navigateUnit(direction) {
+            const idx = UNITS.findIndex(u => u.id === appState.activeUnit);
+            const nextIdx = idx + direction;
+            if (nextIdx >= 0 && nextIdx < UNITS.length) {
+                // Auto-mark current unit complete when moving forward
+                if (direction > 0 && !appState.completedUnits.includes(appState.activeUnit)) {
+                    appState.completedUnits.push(appState.activeUnit);
+                }
+                switchSection(UNITS[nextIdx].id);
+            }
+        }
+
+        function updateBottomNavButtons() {
+            const idx = UNITS.findIndex(u => u.id === appState.activeUnit);
+            const prevBtn = document.getElementById('prevUnitBtn');
+            const nextBtn = document.getElementById('nextUnitBtn');
+
+            prevBtn.disabled = idx === 0;
+            prevBtn.style.opacity = idx === 0 ? '0.4' : '1';
+
+            nextBtn.disabled = idx === UNITS.length - 1;
+            nextBtn.style.opacity = idx === UNITS.length - 1 ? '0.4' : '1';
+        }
+
+        function markCurrentUnitComplete() {
+            const id = appState.activeUnit;
+            const idx = appState.completedUnits.indexOf(id);
+            if (idx === -1) {
+                appState.completedUnits.push(id);
+                showToast('تم تسجيل الوحدة كمكتملة! أحسنت التقدم.');
+            } else {
+                appState.completedUnits.splice(idx, 1);
+                showToast('تم إلغاء علامة الإكمال لهذه الوحدة.');
+            }
+            saveState();
+            renderSidebarNav();
+        }
+
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebarNav');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            sidebar.classList.toggle('translate-x-full');
+            backdrop.classList.toggle('hidden');
+        }
+
+        function scrollToElement(id) {
+            setTimeout(() => {
+                const el = document.getElementById(id);
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }, 150);
+        }
+
+        /* ============================================================================
+           4. SECTION 2: OSI 7-LAYER EXPLORER & TABLE (Slide 5)
+           ============================================================================ */
+        function renderOsiExplorer() {
+            const stackContainer = document.getElementById('osiStackButtons');
+            stackContainer.innerHTML = OSI_LAYERS_DATA.map(item => {
+                const isSelected = appState.selectedOsiLayer === item.num;
+                return `
+                    <button onclick="selectOsiLayer(${item.num})"
+                            class="w-full p-3.5 rounded-xl border text-right transition flex items-center justify-between ${
+                                isSelected
+                                ? 'bg-cyan-500/20 border-cyan-400 text-white active-glow'
+                                : 'bg-slate-900/75 hover:bg-slate-800 border-slate-800 text-slate-300'
+                            }">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-lg ${isSelected ? 'bg-cyan-400 text-slate-950' : 'bg-slate-800 text-cyan-400'} font-mono font-black text-sm flex items-center justify-center">
+                                L${item.num}
+                            </span>
+                            <div>
+                                <div class="font-bold text-sm ltr-badge">${item.layer}</div>
+                                <div class="text-xs text-slate-400">${item.arName}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-0.5 rounded-md text-xs font-mono bg-slate-950/90 text-cyan-300 border border-slate-700 ltr-badge">${item.encapsulation}</span>
+                            <i class="fa-solid fa-chevron-left text-xs ${isSelected ? 'text-cyan-300' : 'text-slate-600'}"></i>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+
+            const active = OSI_LAYERS_DATA.find(l => l.num === appState.selectedOsiLayer) || OSI_LAYERS_DATA[0];
+            const inspector = document.getElementById('osiInspectorCard');
+            inspector.innerHTML = `
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-4 mb-4 border-b border-slate-800">
+                    <div class="flex items-center gap-3">
+                        <span class="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500 to-indigo-600 text-white font-mono font-black text-xl flex items-center justify-center shadow-lg">
+                            L${active.num}
+                        </span>
+                        <div>
+                            <h3 class="text-xl font-black text-white ltr-badge">${active.layer}</h3>
+                            <p class="text-xs text-cyan-300 font-semibold">${active.arName}</p>
+                        </div>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-xs font-mono bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 ltr-badge">Slide 5 Row #${8 - active.num}</span>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800">
+                        <div class="text-xs text-slate-400 mb-1">الوظيفة والملاحظات في المصدر (<span class="ltr-badge">Notes</span>):</div>
+                        <div class="text-sm font-bold text-white ltr-badge text-right mb-1">"${active.notes}"</div>
+                        <div class="text-xs text-slate-300 leading-relaxed">${active.arNotes}</div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800">
+                            <div class="text-[11px] text-slate-400">وحدة التغليف (<span class="ltr-badge">Encapsulation</span>)</div>
+                            <div class="text-base font-black text-amber-400 font-mono mt-1 ltr-badge">${active.encapsulation}</div>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800">
+                            <div class="text-[11px] text-slate-400">الأجهزة (<span class="ltr-badge">Device</span>)</div>
+                            <div class="text-base font-black text-emerald-400 font-mono mt-1 ltr-badge">${active.device === '-' ? '— (برمجية)' : active.device}</div>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800">
+                            <div class="text-[11px] text-slate-400">المقابل في <span class="ltr-badge">TCP/IP</span></div>
+                            <div class="text-xs font-black text-indigo-300 font-mono mt-1.5 ltr-badge">${active.tcpipEquivalent}</div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/30">
+                        <div class="text-xs text-cyan-300 font-bold mb-1"><i class="fa-solid fa-code ml-1"></i> البروتوكولات والصيغ (<span class="ltr-badge">Protocol</span>):</div>
+                        <div class="text-sm font-mono font-bold text-white ltr-badge">${active.protocol}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function selectOsiLayer(num) {
+            appState.selectedOsiLayer = num;
+            renderOsiExplorer();
+        }
+
+        function renderOsiTable() {
+            const tbody = document.getElementById('osiFullTableBody');
+            const rows = [...OSI_LAYERS_DATA];
+            if (appState.osiTableAscending) rows.reverse();
+
+            tbody.innerHTML = rows.map(r => `
+                <tr onclick="selectOsiLayer(${r.num})" class="hover:bg-slate-800/60 cursor-pointer transition ${appState.selectedOsiLayer === r.num ? 'bg-cyan-500/10' : ''}">
+                    <td class="p-3.5 font-mono font-bold text-white ltr-badge">${r.layer}<span class="block text-[11px] font-sans text-slate-400">${r.arName}</span></td>
+                    <td class="p-3.5"><span class="font-semibold text-slate-100 ltr-badge block text-right">${r.notes}</span><span class="text-xs text-slate-400">${r.arNotes}</span></td>
+                    <td class="p-3.5 font-mono font-bold text-amber-300 ltr-badge">${r.encapsulation}</td>
+                    <td class="p-3.5 font-mono text-emerald-300 ltr-badge">${r.device}</td>
+                    <td class="p-3.5 font-mono text-cyan-300 ltr-badge">${r.protocol}</td>
+                </tr>
+            `).join('');
+        }
+
+        function reverseOsiTableOrder() {
+            appState.osiTableAscending = !appState.osiTableAscending;
+            document.getElementById('osiSortBtnLabel').textContent = appState.osiTableAscending
+                ? 'ترتيب تنازلي (7 ← 1)'
+                : 'ترتيب تصاعدي (1 ← 7)';
+            renderOsiTable();
+        }
+
+        /* ============================================================================
+           5. SECTION 3: DATA ENCAPSULATION SIMULATOR & PDU CALCULATOR (Slide 6)
+           ============================================================================ */
+        let encapInterval = null;
+
+        function renderEncapsulationStep() {
+            const s = ENCAP_STEPS[appState.encapStep];
+            for (let i = 0; i < 5; i++) {
+                const btn = document.getElementById(`encStepBtn-${i}`);
+                if (i === appState.encapStep) {
+                    btn.className = 'p-2.5 rounded-xl border border-cyan-400 bg-cyan-500/20 text-white font-bold transition';
+                } else {
+                    btn.className = 'p-2.5 rounded-xl border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-white transition';
+                }
+            }
+
+            const stage = document.getElementById('encapVisualStage');
+            const badgesHtml = s.badges.map((b, idx) => {
+                let bg = 'bg-cyan-500/20 border-cyan-400 text-cyan-200';
+                if (b.includes('TCP')) bg = 'bg-amber-500/25 border-amber-400 text-amber-200';
+                if (b.includes('IP')) bg = 'bg-emerald-500/25 border-emerald-400 text-emerald-200';
+                if (b.includes('MAC') || b.includes('Trailer')) bg = 'bg-teal-500/25 border-teal-400 text-teal-200';
+                if (b.includes('01') || b.includes('10')) bg = 'bg-rose-500/25 border-rose-400 text-rose-200';
+                return `<span class="px-3.5 py-2 rounded-xl border font-mono text-xs md:text-sm font-bold ltr-badge ${bg} shadow-md">${b}</span>`;
+            }).join('<i class="fa-solid fa-plus text-slate-600 text-xs mx-1"></i>');
+
+            stage.innerHTML = `
+                <div class="text-xs font-mono text-cyan-400 mb-1">${s.title}</div>
+                <div class="text-sm md:text-base font-bold text-white ltr-badge mb-2">"${s.sourceText}"</div>
+                <p class="text-xs text-slate-300 max-w-2xl mb-4">${s.arDesc}</p>
+                <div class="flex flex-wrap items-center justify-center gap-2 p-4 rounded-2xl bg-slate-900 border ${s.borderColor}">
+                    ${badgesHtml}
+                </div>
+                <div class="mt-3 text-xs">
+                    وحدة البيانات الناتجة (PDU): <span class="px-2.5 py-0.5 rounded bg-cyan-500 text-slate-950 font-mono font-extrabold ltr-badge">${s.pdu}</span>
+                </div>
+            `;
+        }
+
+        function setEncapsulationStep(idx) {
+            appState.encapStep = idx;
+            renderEncapsulationStep();
+        }
+
+        function stepEncapsulation(delta) {
+            appState.encapStep = (appState.encapStep + delta + ENCAP_STEPS.length) % ENCAP_STEPS.length;
+            renderEncapsulationStep();
+        }
+
+        function autoPlayEncapsulation() {
+            const btn = document.getElementById('autoEncapBtn');
+            if (encapInterval) {
+                clearInterval(encapInterval);
+                encapInterval = null;
+                btn.innerHTML = '<i class="fa-solid fa-play ml-1"></i> تشغيل تلقائي';
+                return;
+            }
+            btn.innerHTML = '<i class="fa-solid fa-pause ml-1"></i> إيقاف مؤقت';
+            encapInterval = setInterval(() => {
+                stepEncapsulation(1);
+            }, 1800);
+        }
+
+        function setCalcProto(proto) {
+            appState.calcProto = proto;
+            const tcpBtn = document.getElementById('calcProtoTCP');
+            const udpBtn = document.getElementById('calcProtoUDP');
+            if (proto === 'TCP') {
+                tcpBtn.className = 'py-2 px-3 rounded-xl text-xs font-bold border border-cyan-500 bg-cyan-500/20 text-cyan-300 transition ltr-badge';
+                udpBtn.className = 'py-2 px-3 rounded-xl text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 transition ltr-badge';
+            } else {
+                udpBtn.className = 'py-2 px-3 rounded-xl text-xs font-bold border border-emerald-500 bg-emerald-500/20 text-emerald-300 transition ltr-badge';
+                tcpBtn.className = 'py-2 px-3 rounded-xl text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 transition ltr-badge';
+            }
+            calculateEncapsulationSize();
+        }
+
+        function calculateEncapsulationSize() {
+            const inputEl = document.getElementById('calcDataInput');
+            const errEl = document.getElementById('calcErrorMsg');
+            let dataBytes = parseInt(inputEl.value, 10);
+
+            if (isNaN(dataBytes) || dataBytes <= 0) {
+                errEl.textContent = 'يرجى إدخال قيمة صحيحة أكبر من صفر (تم افتراض 1 بايت لتجنب القسمة على صفر).';
+                errEl.classList.remove('hidden');
+                dataBytes = 1;
+            } else if (dataBytes > 65000) {
+                errEl.textContent = 'الحد الأقصى لحجم الحزمة تم ضبطه إلى 65000 بايت.';
+                errEl.classList.remove('hidden');
+                dataBytes = 65000;
+            } else {
+                errEl.classList.add('hidden');
+            }
+
+            const transHeader = appState.calcProto === 'TCP' ? 20 : 8;
+            const ipHeader = 20;
+            const frameHeaderTrailer = 18; // 14B MAC Header + 4B FCS Trailer
+
+            const segmentSize = dataBytes + transHeader;
+            const packetSize = segmentSize + ipHeader;
+            const frameSize = packetSize + frameHeaderTrailer;
+            const bitsCount = frameSize * 8;
+            const totalOverhead = transHeader + ipHeader + frameHeaderTrailer;
+            const overheadPct = ((totalOverhead / frameSize) * 100).toFixed(1);
+
+            document.getElementById('resDataSize').textContent = `${dataBytes} Bytes`;
+            document.getElementById('resSegmentSize').textContent = `${segmentSize} Bytes`;
+            document.getElementById('resSegmentNote').textContent = `Data + ${appState.calcProto} Header (${transHeader}B)`;
+            document.getElementById('resPacketSize').textContent = `${packetSize} Bytes`;
+            document.getElementById('resFrameSize').textContent = `${frameSize} Bytes`;
+            document.getElementById('resBitsCount').textContent = `${bitsCount} Bits`;
+            document.getElementById('resOverheadPct').textContent = `${overheadPct}%`;
+            document.getElementById('resOverheadNote').textContent = `ترويسات مضافة: ${totalOverhead} بايت`;
+        }
+
+        /* ============================================================================
+           6. SECTION 4: TCP vs UDP SIMULATION & APPLICATION MATCHER (Slide 4)
+           ============================================================================ */
+        let simTimer = null;
+
+        function runPacketSimulation(proto) {
+            if (simTimer) clearInterval(simTimer);
+            const box = document.getElementById('simLogContainer');
+            box.innerHTML = '';
+
+            const steps = proto === 'TCP' ? [
+                { text: '[1] TCP Connection Setup: جاري إنشاء الاتصال أولاً (3-Way Handshake: SYN ➔ SYN-ACK ➔ ACK)...', color: 'text-cyan-400' },
+                { text: '[2] Sending Segment #1 & #2: تم الإرسال واستلام تأكيد الوصول (ACK Received).', color: 'text-emerald-400' },
+                { text: '[3] Sending Segment #3: ⚠️ حدث فقدان للحزمة رقم #3 في الطريق!', color: 'text-rose-400' },
+                { text: '[4] TCP Reliability & Retransmission: اكتشف TCP عدم وصول التأكيد، فقام بإعادة إرسال الحزمة #3 تلقائياً!', color: 'text-amber-300' },
+                { text: '[5] Result: اكتمل نقل البيانات بدقة 100% (مناسب لتصفح الويب، البريد الإلكتروني، ونقل الملفات).', color: 'text-cyan-300 font-bold' }
+            ] : [
+                { text: '[1] UDP Connectionless Start: بدء إرسال البيانات فوراً دون انتظار إنشاء اتصال مسبق (No Handshake)...', color: 'text-emerald-400' },
+                { text: '[2] Streaming Datagram #1 & #2: تدفق سريع جداً وخفيف (Lightweight, No Flow Control).', color: 'text-emerald-300' },
+                { text: '[3] Streaming Datagram #3: ⚠️ فُقدت الحزمة #3 في الطريق! (تم تجاهلها وعدم إعادة إرسالها لعدم تعطيل البث).', color: 'text-amber-400' },
+                { text: '[4] Streaming Datagram #4: استمر البث المباشر في الوقت الفعلي دون توقف.', color: 'text-emerald-400' },
+                { text: '[5] Result: سرعة قصوى وتأخير منخفض جداً (مناسب لبث الفيديو، الألعاب الأونلاين، ومكالمات VoIP).', color: 'text-emerald-300 font-bold' }
+            ];
+
+            let idx = 0;
+            simTimer = setInterval(() => {
+                if (idx >= steps.length) {
+                    clearInterval(simTimer);
+                    return;
+                }
+                const line = document.createElement('div');
+                line.className = `${steps[idx].color} py-1 border-b border-slate-900`;
+                line.textContent = steps[idx].text;
+                box.appendChild(line);
+                idx++;
+            }, 650);
+        }
+
+        function renderAppScenarios() {
+            const grid = document.getElementById('appScenarioGrid');
+            grid.innerHTML = APP_SCENARIOS.map((app, i) => `
+                <button onclick="inspectAppScenario(${i})" class="glass-card p-3 rounded-xl text-center space-y-1.5 hover:border-cyan-400 transition">
+                    <i class="fa-solid ${app.icon} text-lg text-cyan-400"></i>
+                    <div class="text-xs font-bold text-white ltr-badge">${app.name}</div>
+                    <div class="text-[11px] text-slate-400">${app.ar}</div>
+                </button>
+            `).join('');
+        }
+
+        function inspectAppScenario(idx) {
+            const app = APP_SCENARIOS[idx];
+            const fb = document.getElementById('appScenarioFeedback');
+            fb.classList.remove('hidden');
+            const isTcp = app.proto === 'TCP';
+            fb.className = `p-4 rounded-xl border ${isTcp ? 'bg-cyan-500/10 border-cyan-500/40 text-cyan-200' : 'bg-emerald-500/10 border-emerald-500/40 text-emerald-200'} text-xs md:text-sm flex items-center justify-between flex-wrap gap-3`;
+            fb.innerHTML = `
+                <div>
+                    <span class="font-black ltr-badge">[${app.name} — ${app.proto}]</span>: ${app.reason}
+                </div>
+                <span class="px-3 py-1 rounded-full font-mono font-bold text-xs ${isTcp ? 'bg-cyan-500 text-slate-950' : 'bg-emerald-500 text-slate-950'} ltr-badge">${app.proto}</span>
+            `;
+        }
+
+        /* ============================================================================
+           7. SECTION 5: TCP/IP MODEL & OSI MAPPER (Slides 7 & 8)
+           ============================================================================ */
+        function renderTcpipMapper() {
+            const col = document.getElementById('tcpipInteractiveCol');
+            col.innerHTML = TCPIP_LAYERS_DATA.map(layer => {
+                const isSel = appState.selectedTcpipId === layer.id;
+                return `
+                    <button onclick="selectTcpipLayer('${layer.id}')"
+                            class="w-full p-4 rounded-xl border text-right transition flex items-center justify-between ${
+                                isSel
+                                ? 'bg-indigo-500/25 border-indigo-400 text-white active-glow'
+                                : 'bg-slate-950/80 hover:bg-slate-800 border-slate-800 text-slate-300'
+                            }">
+                        <div>
+                            <div class="font-black text-sm ltr-badge">${layer.name}</div>
+                            <div class="text-xs text-slate-400">${layer.arName}</div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded text-xs font-mono bg-slate-900 text-indigo-300 border border-slate-700 ltr-badge">
+                            OSI: L${layer.osiNums.join('+L')}
+                        </span>
+                    </button>
+                `;
+            }).join('');
+
+            const active = TCPIP_LAYERS_DATA.find(l => l.id === appState.selectedTcpipId) || TCPIP_LAYERS_DATA[0];
+            const box = document.getElementById('tcpipMappingDetailBox');
+            box.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div>
+                            <span class="text-xs font-mono text-indigo-400 ltr-badge">${active.slide}</span>
+                            <h4 class="text-xl font-black text-white ltr-badge">${active.name}</h4>
+                            <p class="text-xs text-cyan-300">${active.arName}</p>
+                        </div>
+                        <div class="text-left">
+                            <span class="text-[11px] text-slate-400 block">يعادل في نموذج OSI:</span>
+                            <span class="text-xs font-mono font-bold text-emerald-400 ltr-badge">${active.osiNames.join(' + ')}</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <div class="text-xs font-bold text-slate-300">النقاط الحرفية في العرض التقديمي:</div>
+                        <ul class="space-y-1.5 text-xs text-white font-mono bg-slate-950/80 p-3.5 rounded-xl border border-slate-800">
+                            ${active.bullets.map(b => `<li class="ltr-badge text-right">• ${b}</li>`).join('')}
+                        </ul>
+                    </div>
+
+                    <p class="text-xs text-slate-300 leading-relaxed">${active.arExplanation}</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 pt-4 mt-4 border-t border-slate-800 text-xs">
+                    <div class="p-3 rounded-xl bg-slate-950/70">
+                        <span class="text-slate-400 block">البروتوكولات المرتبطة:</span>
+                        <span class="font-mono font-bold text-cyan-300 ltr-badge">${active.protocols}</span>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-950/70">
+                        <span class="text-slate-400 block">وحدة البيانات والأجهزة:</span>
+                        <span class="font-mono font-bold text-amber-300 ltr-badge">${active.pdu}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function selectTcpipLayer(id) {
+            appState.selectedTcpipId = id;
+            renderTcpipMapper();
+        }
+
+        /* ============================================================================
+           8. SECTION 6: ACTIVITY TIME (Slide 9) & DIAGNOSTIC TERMINAL (Slides 10-11)
+           ============================================================================ */
+        function renderActivityGame() {
+            const promptBox = document.getElementById('activityPromptBox');
+            const choicesBox = document.getElementById('activityLayerChoices');
+            const scoreBadge = document.getElementById('activityScoreBadge');
+
+            scoreBadge.textContent = `النقاط: ${appState.activityScore} / ${ACTIVITY_ITEMS.length}`;
+
+            if (appState.activityIndex >= ACTIVITY_ITEMS.length) {
+                promptBox.innerHTML = `
+                    <div class="text-emerald-400 font-black text-base">🎉 أحسنت! أتممت تحدي Activity Time (Slide 9) بنجاح!</div>
+                    <p class="text-xs text-slate-300">اضغط على "إعادة النشاط" في الأعلى للتدرب مرة أخرى.</p>
+                `;
+                choicesBox.innerHTML = '';
+                return;
+            }
+
+            const curr = ACTIVITY_ITEMS[appState.activityIndex];
+            promptBox.innerHTML = `
+                <div class="text-xs text-amber-300">العنصر ${appState.activityIndex + 1} من ${ACTIVITY_ITEMS.length}:</div>
+                <div class="text-base md:text-lg font-black text-white font-mono ltr-badge">${curr.item}</div>
+                <div class="text-xs text-slate-400">${curr.hint}</div>
+            `;
+
+            choicesBox.innerHTML = OSI_LAYERS_DATA.map(l => `
+                <button onclick="submitActivityGuess(${l.num})" class="p-2.5 rounded-xl bg-slate-800 hover:bg-cyan-500 hover:text-slate-950 text-xs font-bold text-slate-200 border border-slate-700 transition font-mono ltr-badge">
+                    ${l.layer}
+                </button>
+            `).join('');
+        }
+
+        function submitActivityGuess(layerNum) {
+            const curr = ACTIVITY_ITEMS[appState.activityIndex];
+            const fb = document.getElementById('activityFeedbackBox');
+            fb.classList.remove('hidden');
+
+            if (layerNum === curr.correctLayer) {
+                appState.activityScore++;
+                appState.activityIndex++;
+                fb.className = 'p-3 rounded-xl text-xs font-bold text-center bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+                fb.textContent = '✅ إجابة صحيحة! عنصر مطابق تماماً لجدول الشريحة 5.';
+                renderActivityGame();
+            } else {
+                fb.className = 'p-3 rounded-xl text-xs font-bold text-center bg-rose-500/20 text-rose-300 border border-rose-500/40';
+                fb.textContent = '❌ ليست الطبقة الصحيحة، راجع التلميح وحاول مرة أخرى!';
+            }
+        }
+
+        function resetActivityGame() {
+            appState.activityIndex = 0;
+            appState.activityScore = 0;
+            document.getElementById('activityFeedbackBox').classList.add('hidden');
+            renderActivityGame();
+        }
+
+        function runDiagnosticTool(cmd) {
+            const out = document.getElementById('terminalOutputBox');
+            if (cmd === 'ping') {
+                out.textContent = `C:\\IEEE_KSB_Week2> ping 8.8.8.8
+
+Pinging 8.8.8.8 with 32 bytes of data (Protocol: ICMP - Layer 3 Network / Internet Layer):
+Reply from 8.8.8.8: bytes=32 time=14ms TTL=117
+Reply from 8.8.8.8: bytes=32 time=13ms TTL=117
+Reply from 8.8.8.8: bytes=32 time=15ms TTL=117
+
+Ping statistics for 8.8.8.8:
+    Packets: Sent = 3, Received = 3, Lost = 0 (0% loss)
+[Slide 11 Goal Achieved]: Testing Connectivity -> Verified connections work & measured response speed.`;
+            } else if (cmd === 'tracert') {
+                out.textContent = `C:\\IEEE_KSB_Week2> tracert ieee.org
+
+Tracing route to ieee.org [140.98.193.152] over a maximum of 30 hops:
+  1     2 ms     1 ms     1 ms  192.168.1.1 (Local Router - Layer 3)
+  2    12 ms    11 ms    12 ms  10.20.30.1 (ISP Gateway)
+  3     *        *        *     Request timed out. <-- [Connection Issue Located at Hop 3!]
+  4    42 ms    40 ms    41 ms  140.98.193.152
+
+[Slide 11 Goal Achieved]: Troubleshooting Networks -> Located connection issues & identified slow hop performance.`;
+            } else if (cmd === 'ipconfig') {
+                out.textContent = `C:\\IEEE_KSB_Week2> ipconfig /all
+
+Ethernet adapter Local Area Connection (802.3 Wired - NIC):
+   Physical Address (MAC - Layer 2) . : 00-1A-2B-3C-4D-5E
+   IPv4 Address (Logical - Layer 3) . : 192.168.1.45
+   Subnet Mask . . . . . . . . . . . : 255.255.255.0
+   Default Gateway (Router) . . . . . : 192.168.1.1
+   DNS Servers (Layer 7 Service) . . : 8.8.8.8
+
+[Slide 11 Goal Achieved]: Checked configuration settings & verified no IP/DNS configuration errors.`;
+            }
+        }
+
+        function copyTerminalOutput() {
+            const text = document.getElementById('terminalOutputBox').textContent;
+            const temp = document.createElement('textarea');
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            showToast('تم نسخ مخرجات الطرفية إلى الحافظة!');
+        }
+
+        /* ============================================================================
+           9. SECTION 7: BOOKMARKS SYSTEM
+           ============================================================================ */
+        function toggleBookmark(id, label) {
+            const idx = appState.bookmarks.findIndex(b => b.id === id);
+            if (idx === -1) {
+                appState.bookmarks.push({ id, label });
+                showToast('تمت الإضافة إلى قائمة المفضلة!');
+            } else {
+                appState.bookmarks.splice(idx, 1);
+                showToast('تمت الإزالة من المفضلة.');
+            }
+            saveState();
+            renderBookmarks();
+        }
+
+        function renderBookmarks() {
+            document.getElementById('bookmarkCountBadge').textContent = appState.bookmarks.length;
+            const list = document.getElementById('bookmarksList');
+            if (appState.bookmarks.length === 0) {
+                list.innerHTML = `<div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 text-slate-400 text-center">لم تقم بحفظ أي عناصر في المفضلة بعد. اضغط على زر "حفظ في المفضلة" في أي قسم لإضافته هنا.</div>`;
+                return;
+            }
+            list.innerHTML = appState.bookmarks.map(b => `
+                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                    <span class="text-slate-200 font-semibold"><i class="fa-solid fa-bookmark text-amber-400 ml-2"></i>${b.label}</span>
+                    <button onclick="toggleBookmark('${b.id}', '')" class="text-rose-400 hover:text-rose-300 text-xs">حذف <i class="fa-solid fa-trash-can mr-1"></i></button>
+                </div>
+            `).join('');
+        }
+
+        /* ============================================================================
+           10. SECTION 8: FLASHCARDS & COMPREHENSIVE QUIZ
+           ============================================================================ */
+        function getFilteredFlashcards() {
+            if (appState.fcFilter === 'hard') {
+                return FLASHCARDS_DATA.filter(f => appState.hardFlashcards.includes(f.id));
+            }
+            return FLASHCARDS_DATA;
+        }
+
+        function renderFlashcard() {
+            document.getElementById('hardCountSpan').textContent = appState.hardFlashcards.length;
+            const deck = getFilteredFlashcards();
+
+            if (deck.length === 0) {
+                document.getElementById('fcQuestionText').textContent = 'لا توجد بطاقات مميزة كصعبة حالياً! اضغط على "الكل (12)" لاستعراض جميع البطاقات.';
+                document.getElementById('fcAnswerText').textContent = 'لا توجد بطاقات صعبة.';
+                document.getElementById('fcCounter').textContent = '0 / 0';
+                return;
+            }
+
+            if (appState.fcIndex >= deck.length) appState.fcIndex = 0;
+            const card = deck[appState.fcIndex];
+
+            const inner = document.getElementById('flashcardInner');
+            if (appState.fcFlipped) {
+                inner.classList.add('rotate-y-180');
+            } else {
+                inner.classList.remove('rotate-y-180');
+            }
+
+            document.getElementById('fcSlideTag').textContent = card.slide;
+            document.getElementById('fcCounter').textContent = `${appState.fcIndex + 1} / ${deck.length}`;
+            document.getElementById('fcQuestionText').textContent = card.q;
+            document.getElementById('fcAnswerText').textContent = card.a;
+
+            const isHard = appState.hardFlashcards.includes(card.id);
+            const hardBtn = document.getElementById('fcMarkHardBtn');
+            hardBtn.innerHTML = isHard
+                ? '<i class="fa-solid fa-star text-amber-400 ml-1"></i> مُميّزة كصعبة (إلغاء؟)'
+                : '<i class="fa-regular fa-star ml-1"></i> تمييز كبطاقة صعبة';
+        }
+
+        function flipCurrentFlashcard() {
+            appState.fcFlipped = !appState.fcFlipped;
+            renderFlashcard();
+        }
+
+        function navigateFlashcard(delta) {
+            const deck = getFilteredFlashcards();
+            if (deck.length === 0) return;
+            appState.fcFlipped = false;
+            appState.fcIndex = (appState.fcIndex + delta + deck.length) % deck.length;
+            renderFlashcard();
+        }
+
+        function toggleFlashcardHard() {
+            const deck = getFilteredFlashcards();
+            if (deck.length === 0) return;
+            const card = deck[appState.fcIndex];
+            const idx = appState.hardFlashcards.indexOf(card.id);
+            if (idx === -1) {
+                appState.hardFlashcards.push(card.id);
+                showToast('تم تمييز البطاقة للمراجعة المركزة.');
+            } else {
+                appState.hardFlashcards.splice(idx, 1);
+                showToast('تمت إزالة البطاقة من قائمة الصعبة.');
+            }
+            saveState();
+            renderFlashcard();
+        }
+
+        function setFlashcardFilter(mode) {
+            appState.fcFilter = mode;
+            appState.fcIndex = 0;
+            appState.fcFlipped = false;
+            document.getElementById('fcFilterAll').className = mode === 'all'
+                ? 'px-3 py-1.5 rounded-xl text-xs font-bold bg-cyan-500 text-slate-950 transition'
+                : 'px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 transition';
+            document.getElementById('fcFilterHard').className = mode === 'hard'
+                ? 'px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 transition'
+                : 'px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-amber-300 border border-slate-700 transition';
+            renderFlashcard();
+        }
+
+        function renderQuiz() {
+            const bestBadge = document.getElementById('bestQuizScoreBadge');
+            if (appState.bestQuizScore !== null) {
+                bestBadge.textContent = `أعلى نتيجة سابقة: ${appState.bestQuizScore}%`;
+            } else {
+                bestBadge.textContent = 'أعلى نتيجة سابقة: لم يُختبر بعد';
+            }
+
+            const container = document.getElementById('quizQuestionsContainer');
+            container.innerHTML = QUIZ_QUESTIONS.map((q, qIdx) => {
+                const chosen = appState.quizAnswers[q.id];
+                const hasAnswered = chosen !== undefined;
+
+                const optionsHtml = q.options.map((opt, optIdx) => {
+                    let btnStyle = 'bg-slate-900/80 hover:bg-slate-800 border-slate-800 text-slate-200';
+                    let icon = '<i class="fa-regular fa-circle text-slate-500"></i>';
+
+                    if (hasAnswered) {
+                        if (optIdx === q.correct) {
+                            btnStyle = 'bg-emerald-500/20 border-emerald-400 text-emerald-200 font-bold';
+                            icon = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
+                        } else if (optIdx === chosen && chosen !== q.correct) {
+                            btnStyle = 'bg-rose-500/20 border-rose-400 text-rose-200';
+                            icon = '<i class="fa-solid fa-circle-xmark text-rose-400"></i>';
+                        } else {
+                            btnStyle = 'bg-slate-950/50 border-slate-900 text-slate-500 opacity-70';
+                        }
+                    }
+
+                    return `
+                        <button ${hasAnswered ? 'disabled' : ''} onclick="selectQuizAnswer(${q.id}, ${optIdx})"
+                                class="w-full p-3.5 rounded-xl border text-right text-xs md:text-sm transition flex items-center justify-between gap-3 ${btnStyle}">
+                            <span>${opt}</span>
+                            ${icon}
+                        </button>
+                    `;
+                }).join('');
+
+                const feedbackHtml = hasAnswered ? `
+                    <div class="mt-3 p-3.5 rounded-xl text-xs border ${chosen === q.correct ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200' : 'bg-rose-500/10 border-rose-500/30 text-rose-200'}">
+                        <div class="font-bold mb-1">
+                            ${chosen === q.correct ? '✅ إجابة صحيحة!' : '❌ إجابة غير صحيحة — تعرّف على السبب:'}
+                        </div>
+                        <p class="text-slate-300 leading-relaxed">${q.explanation}</p>
+                    </div>
+                ` : '';
+
+                return `
+                    <div class="glass-card rounded-2xl p-5 border border-slate-800">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                            <span class="text-xs font-bold text-cyan-400">السؤال ${qIdx + 1} من ${QUIZ_QUESTIONS.length} — <span class="text-slate-400">${q.type}</span></span>
+                            <span class="px-2.5 py-0.5 rounded text-[11px] font-mono bg-slate-900 text-indigo-300 border border-slate-700 ltr-badge">${q.topic}</span>
+                        </div>
+                        <h4 class="text-sm md:text-base font-bold text-white mb-4 leading-relaxed">${q.q}</h4>
+                        <div class="space-y-2">
+                            ${optionsHtml}
+                        </div>
+                        ${feedbackHtml}
+                    </div>
+                `;
+            }).join('');
+
+            updateQuizResultsSummary();
+        }
+
+        function selectQuizAnswer(qId, optIdx) {
+            appState.quizAnswers[qId] = optIdx;
+            saveState();
+            renderQuiz();
+        }
+
+        function updateQuizResultsSummary() {
+            const answeredIds = Object.keys(appState.quizAnswers);
+            const panel = document.getElementById('quizResultsPanel');
+            if (answeredIds.length === 0) {
+                panel.classList.add('hidden');
+                return;
+            }
+
+            panel.classList.remove('hidden');
+            let correctCount = 0;
+            const weakTopics = new Set();
+            const strongTopics = new Set();
+
+            QUIZ_QUESTIONS.forEach(q => {
+                const ans = appState.quizAnswers[q.id];
+                if (ans !== undefined) {
+                    if (ans === q.correct) {
+                        correctCount++;
+                        strongTopics.add(q.topic);
+                    } else {
+                        weakTopics.add(q.topic);
+                    }
+                }
+            });
+
+            const pct = Math.round((correctCount / QUIZ_QUESTIONS.length) * 100);
+            if (answeredIds.length === QUIZ_QUESTIONS.length) {
+                if (appState.bestQuizScore === null || pct > appState.bestQuizScore) {
+                    appState.bestQuizScore = pct;
+                    saveState();
+                    document.getElementById('bestQuizScoreBadge').textContent = `أعلى نتيجة سابقة: ${pct}%`;
+                }
+                if (!appState.completedUnits.includes('quiz')) {
+                    appState.completedUnits.push('quiz');
+                    saveState();
+                    renderSidebarNav();
+                }
+            }
+
+            panel.innerHTML = `
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <span class="text-xs font-bold text-indigo-300">تقرير الأداء الفوري (${answeredIds.length} / ${QUIZ_QUESTIONS.length} أسئلة مجابة)</span>
+                        <h3 class="text-2xl font-black text-white mt-1">النتيجة الحالية: <span class="text-cyan-400 ltr-badge">${correctCount} / ${QUIZ_QUESTIONS.length} (${pct}%)</span></h3>
+                    </div>
+                    <button onclick="resetQuiz()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition">
+                        <i class="fa-solid fa-rotate ml-1"></i> إعادة محاولة الاختبار بالكامل
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-slate-800 text-xs">
+                    <div class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                        <div class="font-bold text-emerald-300 mb-1"><i class="fa-solid fa-thumbs-up ml-1"></i> نقاط القوة والوحدات المتقنة:</div>
+                        <p class="text-slate-300">${strongTopics.size > 0 ? Array.from(strongTopics).join(' ، ') : 'أجب عن المزيد من الأسئلة لتحديد نقاط القوة.'}</p>
+                    </div>
+                    <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30">
+                        <div class="font-bold text-amber-300 mb-1"><i class="fa-solid fa-book-open-reader ml-1"></i> موضوعات يُنصح بمراجعتها:</div>
+                        <p class="text-slate-300">${weakTopics.size > 0 ? Array.from(weakTopics).join(' ، ') : 'ممتاز! لا توجد أخطاء مسجلة حتى الآن.'}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function resetQuiz() {
+            appState.quizAnswers = {};
+            saveState();
+            renderQuiz();
+            showToast('تم تصفير إجابات الاختبار للبدء من جديد.');
+        }
+
+        /* ============================================================================
+           11. GLOBAL SEARCH ENGINE
+           ============================================================================ */
+        const SEARCH_INDEX = [
+            { title: 'OSI Model (7 Layers)', desc: 'Application, Presentation, Session, Transport, Network, Data Link, Physical (Slide 5)', unit: 'osi' },
+            { title: '7- Application Layer', desc: 'Closest to the user – HTTP, FTP, SMTP, DNS | PDU: Data (Slide 5 & 7)', unit: 'osi' },
+            { title: '6- Presentation Layer', desc: 'Data formatting: encryption, compression, translation | AVI-MP4-PDF-Docx (Slide 5)', unit: 'osi' },
+            { title: '5- Session Layer', desc: 'Manages sessions: establish, maintain, terminate | SQL-NFS (Slide 5)', unit: 'osi' },
+            { title: '4- Transport Layer', desc: 'Reliable (TCP) or unreliable (UDP) delivery | PDU: Segment (Slide 5 & 7)', unit: 'osi' },
+            { title: '3- Network Layer', desc: 'Logical addressing & routing | Router | IP - ICMP | PDU: Packet (Slide 5)', unit: 'osi' },
+            { title: '2- Data Link Layer', desc: 'MAC addressing + error detection | Switch, Bridge | ARP, 802.3, 802.11 | Frame (Slide 5)', unit: 'osi' },
+            { title: '1- Physical Layer', desc: 'Transmits raw bits over the medium | Hub, Cable, NIC | RJ-Cables | Bits (Slide 5)', unit: 'osi' },
+            { title: 'TCP vs. UDP Comparison', desc: 'Connection-oriented vs Connectionless, Reliable vs Unreliable, Flow Control (Slide 4)', unit: 'tcpudp' },
+            { title: 'Data Encapsulation in OSI', desc: 'Segment -> Packet (IP header) -> Frame (MAC header/trailer) -> Bits (Slide 6)', unit: 'encapsulation' },
+            { title: 'TCP/IP Model (4 Layers)', desc: 'Application, Transport, Internet Layer, Network Access Layer (Slides 7 & 8)', unit: 'tcpip' },
+            { title: 'Networking Tools: Troubleshooting vs Testing', desc: 'Locate connection issues, Measure network speed, Check configuration settings (Slides 10-11)', unit: 'tools' }
+        ];
+
+        function handleGlobalSearch(query) {
+            const drawer = document.getElementById('searchResultsDrawer');
+            const clearBtn = document.getElementById('clearSearchBtn');
+            const list = document.getElementById('searchResultsList');
+            const countEl = document.getElementById('searchResultsCount');
+
+            const clean = query.trim().toLowerCase();
+            if (!clean) {
+                drawer.classList.add('hidden');
+                clearBtn.classList.add('hidden');
+                return;
+            }
+
+            clearBtn.classList.remove('hidden');
+            drawer.classList.remove('hidden');
+
+            const matches = SEARCH_INDEX.filter(item =>
+                item.title.toLowerCase().includes(clean) || item.desc.toLowerCase().includes(clean)
+            );
+
+            countEl.textContent = `نتائج البحث عن "${query}" (${matches.length} نتيجة)`;
+            if (matches.length === 0) {
+                list.innerHTML = `<div class="col-span-2 text-xs text-slate-400 p-3">لا توجد نتائج مطابقة. جرّب البحث عن: TCP, UDP, Router, Switch, Frame, Packet, 802.11, DNS</div>`;
+                return;
+            }
+
+            list.innerHTML = matches.map(m => `
+                <button onclick="switchSection('${m.unit}'); clearGlobalSearch();" class="p-3 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-right transition">
+                    <div class="text-xs font-bold text-cyan-300 ltr-badge">${m.title}</div>
+                    <div class="text-[11px] text-slate-300 mt-1">${m.desc}</div>
+                </button>
+            `).join('');
+        }
+
+        function clearGlobalSearch() {
+            document.getElementById('globalSearchInput').value = '';
+            document.getElementById('searchResultsDrawer').classList.add('hidden');
+            document.getElementById('clearSearchBtn').classList.add('hidden');
+        }
+
+        /* ============================================================================
+           12. RESET MODAL HANDLERS & INITIALIZATION
+           ============================================================================ */
+        function openResetModal() {
+            const modal = document.getElementById('resetModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeResetModal() {
+            const modal = document.getElementById('resetModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function confirmResetProgress() {
+            localStorage.removeItem(STORAGE_KEY);
+            appState.completedUnits = [];
+            appState.bookmarks = [];
+            appState.hardFlashcards = [];
+            appState.quizAnswers = {};
+            appState.bestQuizScore = null;
+            closeResetModal();
+            initApp();
+            showToast('تمت إعادة ضبط جميع البيانات والتقدم بنجاح.');
+        }
+
+        function initApp() {
+            loadState();
+            renderSidebarNav();
+            renderOsiExplorer();
+            renderOsiTable();
+            renderEncapsulationStep();
+            calculateEncapsulationSize();
+            renderAppScenarios();
+            renderTcpipMapper();
+            renderActivityGame();
+            renderBookmarks();
+            renderFlashcard();
+            renderQuiz();
+            switchSection(appState.activeUnit || 'dashboard');
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
